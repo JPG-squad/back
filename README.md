@@ -26,12 +26,6 @@ Format all the project in the beggining:
 black .
 ```
 
-Test command (out-of-the-box Django Test Framework):
-```bash
-docker-compose run --rm back bash -c "python manage.py test"
-docker-compose exec back bash -c "python manage.py test"
-```
-
 Lint command:
 ```bash
 docker-compose run --rm back bash -c "flake8"
