@@ -1,0 +1,18 @@
+# Git
+.git
+.gitignore
+
+# Visual Studio Code
+.vscode/
+
+# Docker
+.docker
+
+# Poetry Virtual Environment
+.venv/
+
+# Python pycache
+app/__pycache__/
+app/*/__pycache__/
+app/*/*/__pycache__/
+app/*/*/*/__pycache__/

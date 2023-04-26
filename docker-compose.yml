@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  back:
+    container_name: back
+    build:
+      context: .
+      args:
+        - POETRY_DEV=true
+    env_file:
+      - env-local
+    volumes:
+      - ./app:/app
+    ports:
+      - 8777:80
+    depends_on:
+      - db
+    command: >
+      bash -c "python manage.py wait_for_db &&
+               python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:80"
+
+  db:
+    container_name: db
+    image: postgres:13.7
+    env_file:
+      - env-local
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
