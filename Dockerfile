@@ -27,10 +27,6 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PATH="/srv/venv/bin:$PATH"
 
-RUN adduser --disabled-password --no-create-home django-user
-
 WORKDIR /app
 COPY app/ .
 EXPOSE 80
-
-USER django-user

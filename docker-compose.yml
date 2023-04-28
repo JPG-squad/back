@@ -11,6 +11,8 @@ services:
       - env-local
     volumes:
       - ./app:/app
+      - ~/.aws/credentials:/root/.aws/credentials:ro
+      - ~/.aws/config:/root/.aws/config:ro
     ports:
       - 8777:80
     depends_on:
