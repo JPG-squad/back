@@ -44,6 +44,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 class LogoutView(generics.ListAPIView):
     """Logout the authenticated user."""
 
+    serializer_class = UserSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 

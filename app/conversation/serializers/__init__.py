@@ -1,2 +1,1 @@
-from .conversation import ConversationSerializer
-from .transcribe_conversation_file import TranscribeConversationFileSerializer
+from .conversation import ConversationSerializer, ConversationUploadSerializer
