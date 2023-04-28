@@ -13,13 +13,7 @@ RUN poetry export -f requirements.txt -o requirements.txt --without-hashes $(tes
     && python -m venv venv && . venv/bin/activate && pip install -r requirements.txt
 # end poetry
 
-# Add wait script
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.9.0/wait /wait
-RUN chmod +x /wait
-# wait script
-
 FROM python:${PYTHON_VERSION}-slim
-
 
 COPY --from=build-image /srv/venv/ /srv/venv/
 

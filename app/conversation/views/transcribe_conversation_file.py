@@ -1,5 +1,5 @@
 import json
-from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status, authentication, permissions
 from conversation.serializers import TranscribeConversationFileSerializer
@@ -31,7 +31,7 @@ def start_job(job_name, bucket_name, file_name, media_format, language_code, tra
         return job
 
 
-class TranscribeConversationFileView(APIView):
+class TranscribeConversationFileView(GenericAPIView):
     """View for transcribing a conversation file (a wav file)"""
 
     serializer_class = TranscribeConversationFileSerializer
