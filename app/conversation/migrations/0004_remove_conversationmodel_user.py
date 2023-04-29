@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("conversation", "0002_patientmodel_user"),
+        ("conversation", "0003_conversationmodel_conversation"),
     ]
 
     operations = [

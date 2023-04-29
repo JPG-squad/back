@@ -7,10 +7,25 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from app.settings import AUTH_USER_MODEL
 from conversation.models import ConversationModel, PatientModel
 from conversation.serializers import ConversationSerializer, ConversationUploadSerializer
 
 bucket_name = environ.get("BUCKET_NAME")
+
+
+def update_speaker_names(conversation_json, employee_speaker_id, employee_name, patient_name):
+    for i, speaker in enumerate(conversation_json["speakers"]):
+        if speaker == employee_speaker_id:
+            conversation_json["speakers"][i] = employee_name
+        else:
+            conversation_json["speakers"][i] = patient_name
+    for i, item in enumerate(conversation_json["conversation"]):
+        if item["speaker"] == employee_speaker_id:
+            conversation_json["conversation"][i]["speaker"] = employee_name
+        else:
+            conversation_json["conversation"][i]["speaker"] = patient_name
+    return conversation_json
 
 
 def parse_transcribe_conversation(transcription_result):
@@ -66,20 +81,17 @@ def start_job(
     media_uri = f"s3://{bucket_name}/{file_name}"
     try:
         job_args = {
-            "MedicalTranscriptionJobName": job_name,
+            "TranscriptionJobName": job_name,
             "Media": {"MediaFileUri": media_uri},
             "MediaFormat": media_format,
-            "Type": "CONVERSATION",
-            "Specialty": "PRIMARYCARE",
             "LanguageCode": language_code,
             "OutputBucketName": bucket_name,
             "OutputKey": file_name.replace(".wav", ".json"),
-            "ContentIdentificationType": "PHI",
             "Settings": {"ShowSpeakerLabels": True, "MaxSpeakerLabels": 2},
         }
 
-        response = transcribe_client.start_medical_transcription_job(**job_args)
-        job = response["MedicalTranscriptionJob"]
+        response = transcribe_client.start_transcription_job(**job_args)
+        job = response["TranscriptionJob"]
         print(f"Started transcription job {job_name}.")
     except Exception:
         print(f"Couldn't start transcription job {job_name}")
@@ -120,7 +132,7 @@ class ConversationUploadView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, patient_id):
-        execute_transcribe = True
+        execute_transcribe = False
 
         s3 = boto3.client("s3")
         transcribe = boto3.client("transcribe")
@@ -140,26 +152,26 @@ class ConversationUploadView(GenericAPIView):
                     bucket_name=bucket_name,
                     file_name=file_name,
                     media_format="wav",
-                    language_code="en-US",
+                    language_code="es-ES",
                     transcribe_client=transcribe,
                 )
 
-                job_status = transcribe.get_medical_transcription_job(MedicalTranscriptionJobName=job_name)[
-                    "MedicalTranscriptionJob"
-                ]["TranscriptionJobStatus"]
+                job_status = transcribe.get_transcription_job(TranscriptionJobName=job_name)["TranscriptionJob"][
+                    "TranscriptionJobStatus"
+                ]
 
                 # wait for the transcription job to complete
                 while job_status == "IN_PROGRESS":
-                    job_status = transcribe.get_medical_transcription_job(MedicalTranscriptionJobName=job_name)[
-                        "MedicalTranscriptionJob"
-                    ]["TranscriptionJobStatus"]
+                    job_status = transcribe.get_transcription_job(TranscriptionJobName=job_name)["TranscriptionJob"][
+                        "TranscriptionJobStatus"
+                    ]
                 # if the job completed successfully, retrieve the transcription result and store it in S3
                 if job_status == "COMPLETED":
                     response = s3.get_object(Bucket=bucket_name, Key=file_name.replace(".wav", ".json"))
                     transcription_json = json.loads(response["Body"].read().decode("utf-8"))
                 else:
                     print(f"Transcription job failed with status: {job_status}")
-                transcribe.delete_medical_transcription_job(MedicalTranscriptionJobName=job_name)
+                transcribe.delete_transcription_job(TranscriptionJobName=job_name)
             else:
                 response = s3.get_object(Bucket=bucket_name, Key=file_name.replace(".wav", ".json"))
                 transcription_json = json.loads(response["Body"].read().decode("utf-8"))
@@ -168,6 +180,17 @@ class ConversationUploadView(GenericAPIView):
             question = "Can you improve the conversation json as it can have some litte errors, if so return me the json improved without aditional text"
             ask_question(json.dumps(conversation_json), question)
 
+            question = 'Can you identify which speaker is the employee, it must had said somethink like "Das tu consentimiento que esta conversacion va ser grabada", respond with the speaker identifier only'
+            employee_speaker_id = ask_question(json.dumps(conversation_json), question)
+
+            patient_name = PatientModel.objects.get(id=patient_id).name
+            employee_name = request.user.name
+            conversation_json = update_speaker_names(
+                conversation_json, employee_speaker_id, employee_name, patient_name
+            )
+
+            # Pillar chat i automeoplenar els answers
+
             transcription_result = transcription_json["results"]["transcripts"][0]["transcript"]
             title_question = "Create a title for this conversation of maximum 7 words."
             title = ask_question(transcription_result, title_question)
@@ -175,7 +198,6 @@ class ConversationUploadView(GenericAPIView):
             description = ask_question(transcription_result, description_question)
 
             ConversationModel.objects.create(
-                user=request.user,
                 patient=PatientModel.objects.get(id=patient_id),
                 title=title,
                 description=description,

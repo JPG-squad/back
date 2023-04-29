@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from conversation.models import ConversationModel
 
+
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConversationModel
@@ -13,6 +14,21 @@ class ConversationSerializer(serializers.ModelSerializer):
             "transcribed_file_s3_path",
             "title",
             "description",
+        ]
+
+
+class ConversationDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConversationModel
+        fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "wav_file_s3_path",
+            "transcribed_file_s3_path",
+            "title",
+            "description",
+            "conversation",
         ]
 
 
