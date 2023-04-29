@@ -45,23 +45,17 @@ def start_job(
     media_uri = f"s3://{bucket_name}/{file_name}"
     try:
         job_args = {
-            "MedicalTranscriptionJobName": job_name,
+            "TranscriptionJobName": job_name,
             "Media": {"MediaFileUri": media_uri},
             "MediaFormat": media_format,
-            "Type": "CONVERSATION",
-            "Specialty": "PRIMARYCARE",
             "LanguageCode": language_code,
             "OutputBucketName": bucket_name,
             "OutputKey": file_name.replace(".wav", ".json"),
+            "Settings": {"ShowSpeakerLabels": True, "MaxSpeakerLabels": 2, "ShowAlternatives": False},
         }
-        if vocabulary_name is not None:
-            job_args["Settings"] = {
-                "VocabularyName": vocabulary_name,
-                "ShowSpeakerLabels": True,
-                "MaxSpeakerLabels": 2,
-            }
-        response = transcribe_client.start_medical_transcription_job(**job_args)
-        job = response["MedicalTranscriptionJob"]
+
+        response = transcribe_client.start_transcription_job(**job_args)
+        job = response["TranscriptionJob"]
         print(f"Started transcription job {job_name}.")
     except Exception:
         print(f"Couldn't start transcription job {job_name}")
@@ -119,15 +113,15 @@ class ConversationUploadView(GenericAPIView):
                 transcribe_client=transcribe,
             )
 
-            job_status = transcribe.get_medical_transcription_job(MedicalTranscriptionJobName=job_name)[
-                "MedicalTranscriptionJob"
-            ]["TranscriptionJobStatus"]
+            job_status = transcribe.get_transcription_job(TranscriptionJobName=job_name)["TranscriptionJob"][
+                "TranscriptionJobStatus"
+            ]
 
             # wait for the transcription job to complete
             while job_status == "IN_PROGRESS":
-                job_status = transcribe.get_medical_transcription_job(MedicalTranscriptionJobName=job_name)[
-                    "MedicalTranscriptionJob"
-                ]["TranscriptionJobStatus"]
+                job_status = transcribe.get_transcription_job(TranscriptionJobName=job_name)["TranscriptionJob"][
+                    "TranscriptionJobStatus"
+                ]
             # if the job completed successfully, retrieve the transcription result and store it in S3
             if job_status == "COMPLETED":
                 response = s3.get_object(Bucket=bucket_name, Key=file_name.replace(".wav", ".json"))
@@ -136,7 +130,7 @@ class ConversationUploadView(GenericAPIView):
                 ]
             else:
                 print(f"Transcription job failed with status: {job_status}")
-            transcribe.delete_medical_transcription_job(MedicalTranscriptionJobName=job_name)
+            transcribe.delete_transcription_job(TranscriptionJobName=job_name)
 
             title_question = "Create a title for this conversation of maximum 7 words."
             title = ask_question(transcription_result, title_question)
