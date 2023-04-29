@@ -117,11 +117,14 @@ class ConversationDetailView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, patient_id, conversation_id):
-        conversation = ConversationModel.objects.get(
+        conversation = ConversationModel.objects.filter(
             id=conversation_id, patient_id=patient_id, patient_id__user_id=request.user.id
         )
-        serializer = ConversationDetailSerializer(conversation)
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+        if conversation.exists():
+            serializer = ConversationDetailSerializer(conversation)
+            return Response(status=status.HTTP_200_OK, data=serializer.data)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class ConversationUploadView(GenericAPIView):
@@ -138,8 +141,9 @@ class ConversationUploadView(GenericAPIView):
         transcribe = boto3.client("transcribe")
 
         serializer = ConversationUploadSerializer(data=request.data)
+        patient = PatientModel.objects.get(id=patient_id)
 
-        if serializer.is_valid():
+        if serializer.is_valid() and patient is not None:
             file = request.FILES["conversation_file"]
             file_name = file.name
             s3.upload_fileobj(file, bucket_name, file_name)
@@ -177,13 +181,16 @@ class ConversationUploadView(GenericAPIView):
                 transcription_json = json.loads(response["Body"].read().decode("utf-8"))
 
             conversation_json = parse_transcribe_conversation(transcription_json)
-            question = "Can you improve the conversation json as it can have some litte errors, if so return me the json improved without aditional text"
+            question = '''Can you improve the conversation json as it can have some litte errors,
+                        if so return me the json improved without aditional text.'''
             ask_question(json.dumps(conversation_json), question)
 
-            question = 'Can you identify which speaker is the employee, it must had said somethink like "Das tu consentimiento que esta conversacion va ser grabada", respond with the speaker identifier only'
+            question = '''Can you identify which speaker is the employee, it must had said somethink like:
+            "Das tu consentimiento que esta conversacion va ser grabada?"
+            Respond with the speaker identifier only'''
             employee_speaker_id = ask_question(json.dumps(conversation_json), question)
 
-            patient_name = PatientModel.objects.get(id=patient_id).name
+            patient_name = patient.name
             employee_name = request.user.name
             conversation_json = update_speaker_names(
                 conversation_json, employee_speaker_id, employee_name, patient_name
@@ -198,7 +205,7 @@ class ConversationUploadView(GenericAPIView):
             description = ask_question(transcription_result, description_question)
 
             ConversationModel.objects.create(
-                patient=PatientModel.objects.get(id=patient_id),
+                patient=patient,
                 title=title,
                 description=description,
                 wav_file_s3_path=file_name,
