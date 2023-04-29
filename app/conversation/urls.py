@@ -3,12 +3,15 @@ URL mappings for the conversation API.
 """
 from django.urls import path
 
-from conversation.views import ConversationView, ConversationDetailView, ConversationUploadView
+from conversation.views import ConversationView, ConversationDetailView, ConversationUploadView, PatientView
 
 app_name = "conversation"
 
 urlpatterns = [
-    path("upload/", ConversationUploadView.as_view(), name="upload"),
-    path("", ConversationView.as_view(), name="conversation"),
-    path("<int:id>/", ConversationDetailView.as_view(), name="conversation"),
+    # Conversations
+    path("conversation/", ConversationView.as_view(), name="conversation"),
+    path("conversation/<int:id>/", ConversationDetailView.as_view(), name="conversation"),
+    path("conversation/upload/", ConversationUploadView.as_view(), name="upload"),
+    # Patients
+    path("patient/", ConversationView.as_view(), name="patient"),
 ]
