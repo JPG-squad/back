@@ -1,6 +1,9 @@
+import json
+
 from rest_framework import serializers
 
 from conversation.models import ConversationModel
+
 
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,6 +21,8 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 
 class ConversationDetailSerializer(serializers.ModelSerializer):
+    conversation = serializers.JSONField()
+
     class Meta:
         model = ConversationModel
         fields = [
@@ -31,6 +36,13 @@ class ConversationDetailSerializer(serializers.ModelSerializer):
             "conversation",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def to_representation(self, instance):
+        """Convert `conversation` string field to JSON object"""
+        representation = super().to_representation(instance)
+        conversation = representation['conversation']
+        representation['conversation'] = json.loads(conversation)["conversation"]
+        return representation
 
 
 class ConversationUploadSerializer(serializers.Serializer):

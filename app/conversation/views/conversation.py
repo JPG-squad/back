@@ -106,7 +106,7 @@ class ConversationDetailView(GenericAPIView):
             id=conversation_id, patient_id=patient_id, patient_id__user_id=request.user.id
         )
         if conversation.exists():
-            serializer = ConversationDetailSerializer(conversation)
+            serializer = ConversationDetailSerializer(conversation[0])
             return Response(status=status.HTTP_200_OK, data=serializer.data)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
