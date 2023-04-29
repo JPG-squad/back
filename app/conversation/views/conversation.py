@@ -13,6 +13,28 @@ from conversation.serializers import ConversationSerializer, ConversationUploadS
 bucket_name = environ.get("BUCKET_NAME")
 
 
+def parse_transcribe_conversation(transcription_result):
+    parsed_conversation = {"conversation": [], "speakers": []}
+    speaker_set = set()
+    for speaker in transcription_result["results"]["speaker_labels"]["segments"]:
+        speaker_set.add(speaker["speaker_label"])
+    parsed_conversation["speakers"] = list(speaker_set)
+
+    speaker = None
+    text = ""
+    for item in transcription_result["results"]["items"]:
+        if speaker is not None:
+            if speaker != item["speaker_label"]:
+                parsed_conversation["conversation"].append({'speaker': speaker, 'text': text})
+                text = ""
+            text += item["alternatives"][0]["content"] + " "
+        else:
+            text = item["alternatives"][0]["content"] + " "
+        speaker = item["speaker_label"]
+    parsed_conversation["conversation"].append({'speaker': speaker, 'text': text})
+    return parsed_conversation
+
+
 def ask_question(context, question):
     prompt = f"Q: {question}\nA:"
     response = openai.Completion.create(
@@ -52,13 +74,10 @@ def start_job(
             "LanguageCode": language_code,
             "OutputBucketName": bucket_name,
             "OutputKey": file_name.replace(".wav", ".json"),
+            "ContentIdentificationType": "PHI",
+            "Settings": {"ShowSpeakerLabels": True, "MaxSpeakerLabels": 2},
         }
-        if vocabulary_name is not None:
-            job_args["Settings"] = {
-                "VocabularyName": vocabulary_name,
-                "ShowSpeakerLabels": True,
-                "MaxSpeakerLabels": 2,
-            }
+
         response = transcribe_client.start_medical_transcription_job(**job_args)
         job = response["MedicalTranscriptionJob"]
         print(f"Started transcription job {job_name}.")
@@ -99,48 +118,60 @@ class ConversationUploadView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, patient_id):
+        execute_transcribe = True
+
+        s3 = boto3.client("s3")
+        transcribe = boto3.client("transcribe")
+
         serializer = ConversationUploadSerializer(data=request.data)
+
         if serializer.is_valid():
             file = request.FILES["conversation_file"]
-            s3 = boto3.client("s3")
-            transcribe = boto3.client("transcribe")
             file_name = file.name
             s3.upload_fileobj(file, bucket_name, file_name)
             job_name = "transcribe-job-" + file_name
 
-            # Start transcription job
-            start_job(
-                job_name=job_name,
-                bucket_name=bucket_name,
-                file_name=file_name,
-                media_format="wav",
-                language_code="en-US",
-                transcribe_client=transcribe,
-            )
+            if execute_transcribe:
+                # Start transcription job
+                start_job(
+                    job_name=job_name,
+                    bucket_name=bucket_name,
+                    file_name=file_name,
+                    media_format="wav",
+                    language_code="en-US",
+                    transcribe_client=transcribe,
+                )
 
-            job_status = transcribe.get_medical_transcription_job(MedicalTranscriptionJobName=job_name)[
-                "MedicalTranscriptionJob"
-            ]["TranscriptionJobStatus"]
-
-            # wait for the transcription job to complete
-            while job_status == "IN_PROGRESS":
                 job_status = transcribe.get_medical_transcription_job(MedicalTranscriptionJobName=job_name)[
                     "MedicalTranscriptionJob"
                 ]["TranscriptionJobStatus"]
-            # if the job completed successfully, retrieve the transcription result and store it in S3
-            if job_status == "COMPLETED":
-                response = s3.get_object(Bucket=bucket_name, Key=file_name.replace(".wav", ".json"))
-                transcription_result = json.loads(response["Body"].read().decode("utf-8"))["results"]["transcripts"][0][
-                    "transcript"
-                ]
-            else:
-                print(f"Transcription job failed with status: {job_status}")
-            transcribe.delete_medical_transcription_job(MedicalTranscriptionJobName=job_name)
 
+                # wait for the transcription job to complete
+                while job_status == "IN_PROGRESS":
+                    job_status = transcribe.get_medical_transcription_job(MedicalTranscriptionJobName=job_name)[
+                        "MedicalTranscriptionJob"
+                    ]["TranscriptionJobStatus"]
+                # if the job completed successfully, retrieve the transcription result and store it in S3
+                if job_status == "COMPLETED":
+                    response = s3.get_object(Bucket=bucket_name, Key=file_name.replace(".wav", ".json"))
+                    transcription_json = json.loads(response["Body"].read().decode("utf-8"))
+                else:
+                    print(f"Transcription job failed with status: {job_status}")
+                transcribe.delete_medical_transcription_job(MedicalTranscriptionJobName=job_name)
+            else:
+                response = s3.get_object(Bucket=bucket_name, Key=file_name.replace(".wav", ".json"))
+                transcription_json = json.loads(response["Body"].read().decode("utf-8"))
+
+            conversation_json = parse_transcribe_conversation(transcription_json)
+            question = "Can you improve the conversation json as it can have some litte errors, if so return me the json improved without aditional text"
+            ask_question(json.dumps(conversation_json), question)
+
+            transcription_result = transcription_json["results"]["transcripts"][0]["transcript"]
             title_question = "Create a title for this conversation of maximum 7 words."
             title = ask_question(transcription_result, title_question)
             description_question = "Create a one paragraph summary of this conversation of maximum 30 words."
             description = ask_question(transcription_result, description_question)
+
             ConversationModel.objects.create(
                 user=request.user,
                 patient=PatientModel.objects.get(id=patient_id),
@@ -148,6 +179,7 @@ class ConversationUploadView(GenericAPIView):
                 description=description,
                 wav_file_s3_path=file_name,
                 transcribed_file_s3_path=file_name.replace(".wav", ".json"),
+                conversation=json.dumps(conversation_json),
             )
             return Response(status=status.HTTP_200_OK, data={"title": title, "description": description})
         else:

@@ -3,6 +3,7 @@ from django.db import models
 from .patient import PatientModel
 from app.settings import AUTH_USER_MODEL
 
+
 class ConversationModel(models.Model):
     title = models.CharField(max_length=255, null=False, blank=False)
     description = models.TextField(null=False, blank=False)
@@ -12,6 +13,7 @@ class ConversationModel(models.Model):
     transcribed_file_s3_path = models.CharField(max_length=255, null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    conversation = models.JSONField(null=True, blank=True)
 
     class Meta:
         ordering = ("updated_at",)
