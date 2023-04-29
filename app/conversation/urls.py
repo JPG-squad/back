@@ -4,6 +4,7 @@ URL mappings for the conversation API.
 from django.urls import path
 
 from conversation.views import (
+    AnswerView,
     ConversationDetailView,
     ConversationUploadView,
     ConversationView,
@@ -29,6 +30,7 @@ urlpatterns = [
         ConversationUploadView.as_view(),
         name="patient-conversation-upload",
     ),
+    path("patient/<int:patient_id>/answer/", AnswerView.as_view(), name="patient-answer"),
     path("relevant-point/", RelevantPointView.as_view(), name="relevant-point"),
     path("relevant-point/<int:relevant_point_id>", RelevantPointDetailView.as_view(), name="relevant-point-detail"),
 ]
