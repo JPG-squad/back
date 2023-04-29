@@ -148,8 +148,8 @@ class ConversationUploadView(GenericAPIView):
             description_question = "Create a one paragraph summary of this conversation of maximum 30 words." ""
             description = ask_question(transcription_result, description_question)
             ConversationModel.objects.create(
-                user=get_user_model().objects.get(id=request.data["user"]),
-                patient=PatientModel.objects.get(id=request.data["patient"]),
+                user=get_user_model().objects.get(id=request.data["user_id"]),
+                patient=PatientModel.objects.get(id=request.data["patient_id"]),
                 title=title,
                 description=description,
                 wav_file_s3_path=file_name,
