@@ -13,5 +13,5 @@ urlpatterns = [
     path("conversation/<int:id>/", ConversationDetailView.as_view(), name="conversation"),
     path("conversation/upload/", ConversationUploadView.as_view(), name="upload"),
     # Patients
-    path("patient/", ConversationView.as_view(), name="patient"),
+    path("patient/", PatientView.as_view(), name="patient"),
 ]
