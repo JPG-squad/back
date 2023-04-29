@@ -7,7 +7,7 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from conversation.models import ConversationModel
+from conversation.models import ConversationModel, PatientModel
 from conversation.serializers import ConversationSerializer, ConversationUploadSerializer
 
 bucket_name = environ.get("BUCKET_NAME")
@@ -142,8 +142,8 @@ class ConversationUploadView(GenericAPIView):
             description_question = "Create a one paragraph summary of this conversation of maximum 30 words."
             description = ask_question(transcription_result, description_question)
             ConversationModel.objects.create(
-                user=request.user.id,
-                patient=patient_id,
+                user=request.user,
+                patient=PatientModel.objects.get(id=patient_id),
                 title=title,
                 description=description,
                 wav_file_s3_path=file_name,
