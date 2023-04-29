@@ -4,14 +4,14 @@ import logging
 from os import environ
 
 import boto3
-import openai
 from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from app.settings import AUTH_USER_MODEL, LOGGER_NAME
+from app.settings import LOGGER_NAME
 from conversation.models import ConversationModel, PatientModel
 from conversation.serializers import ConversationDetailSerializer, ConversationSerializer, ConversationUploadSerializer
+from conversation.services import ChatGPTService
 
 bucket_name = environ.get("BUCKET_NAME")
 logger = logging.getLogger(LOGGER_NAME)
@@ -51,26 +51,6 @@ def parse_transcribe_conversation(transcription_result):
         speaker = item["speaker_label"]
     parsed_conversation["conversation"].append({'speaker': speaker, 'text': text})
     return parsed_conversation
-
-
-def ask_question(context, question):
-    prompt = f"Q: {question}\nA:"
-    logger.info("Asking to chatgpt: %s", prompt)
-    response = openai.Completion.create(
-        engine="text-davinci-002",
-        prompt=context + prompt,
-        temperature=0.5,
-        max_tokens=1000,
-        n=1,
-        stop=None,
-        timeout=10,
-        frequency_penalty=0,
-        presence_penalty=0,
-    )
-
-    answer = response.choices[0].text.strip()
-    logger.info("Answer from chatgpt: %s", answer)
-    return answer
 
 
 def start_job(
@@ -193,13 +173,13 @@ class ConversationUploadView(GenericAPIView):
                         if so return me the json improved without aditional text.'''
             logger.info("Conversation json: %s", conversation_json)
 
-            ask_question(json.dumps(conversation_json), question)
+            ChatGPTService.ask(json.dumps(conversation_json), question)
             logger.info("Conversation json improved: %s", conversation_json)
 
             question = '''Can you identify which speaker is the employee, it must had said somethink like:
             "Das tu consentimiento que esta conversacion va ser grabada?"
             Respond with the speaker identifier only'''
-            employee_speaker_id = ask_question(json.dumps(conversation_json), question)
+            employee_speaker_id = ChatGPTService.ask(json.dumps(conversation_json), question)
             logger.info("Employee speaker id: %s", employee_speaker_id)
 
             patient_name = patient.name
@@ -213,9 +193,9 @@ class ConversationUploadView(GenericAPIView):
 
             transcription_result = transcription_json["results"]["transcripts"][0]["transcript"]
             title_question = "Crea un titulo para esta conversacion de maximo 7 palabras."
-            title = ask_question(transcription_result, title_question)
+            title = ChatGPTService.ask(transcription_result, title_question)
             description_question = "Crea un resumen de esta conversacion de maximo 30 palabras."
-            description = ask_question(transcription_result, description_question)
+            description = ChatGPTService.ask(transcription_result, description_question)
 
             ConversationModel.objects.create(
                 patient=patient,
