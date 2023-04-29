@@ -14,7 +14,6 @@ from conversation.views import (
 app_name = "conversation"
 
 urlpatterns = [
-    # Patients
     path("patient/", PatientView.as_view(), name="patient"),
     path("patient/<int:patient_id>", PatientDetailView.as_view(), name="patient-detail"),
     path("patient/<int:patient_id>/conversation/", ConversationView.as_view(), name="patient-conversations"),
