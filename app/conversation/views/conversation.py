@@ -228,7 +228,8 @@ class ConversationUploadView(GenericAPIView):
 
             # We update the user updated_at attribute so it goes to the top of the list when sorted in the frontend
             user = request.user
-            user.update(updated_at=datetime.now())
+            user.updated_at = datetime.now()
+            user.save()
 
             return Response(status=status.HTTP_200_OK, data={"title": title, "description": description})
         else:
