@@ -20,11 +20,7 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 class ConversationUploadSerializer(serializers.Serializer):
     conversation_file = serializers.FileField(write_only=True)
-    user_id = serializers.IntegerField(write_only=True)
-    patient_id = serializers.IntegerField(write_only=True)
 
     def validate(self, data):
-        # Remove the file from the validated data,
-        # as we will handle it separately in the view
         data.pop("conversation_file")
         return data
