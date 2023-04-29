@@ -7,8 +7,6 @@ class ConversationSerializer(serializers.ModelSerializer):
         model = ConversationModel
         fields = [
             "id",
-            "user",
-            "patient",
             "created_at",
             "updated_at",
             "wav_file_s3_path",

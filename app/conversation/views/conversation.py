@@ -75,8 +75,8 @@ class ConversationView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, patient_id):
-        queryset = ConversationModel.objects.filter(user_id=request.user.id, patient_id=patient_id)
-        serializer = ConversationSerializer(queryset, many=True)
+        conversations = ConversationModel.objects.filter(user_id=request.user.id, patient_id=patient_id)
+        serializer = ConversationSerializer(conversations, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 
@@ -86,8 +86,8 @@ class ConversationDetailView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, patient_id, conversation_id):
-        queryset = ConversationModel.objects.filter(user_id=request.user.id, patient_id=patient_id, id=conversation_id)
-        serializer = ConversationSerializer(queryset, many=True)
+        conversation = ConversationModel.objects.get(user_id=request.user.id, patient_id=patient_id, id=conversation_id)
+        serializer = ConversationSerializer(conversation)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 
