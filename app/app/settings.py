@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import logging.config
 import os
 from pathlib import Path
 
@@ -141,3 +142,11 @@ AUTH_USER_MODEL = "core.User"
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# Logging configuration
+LOGGER_NAME = 'backend'
+logging_config_file = 'logging.dev.ini'
+if logging_config_file:
+    LOGGING_CONFIG = 'logging.config.fileConfig'
+    LOGGING = {}
+    logging.config.fileConfig(logging_config_file, disable_existing_loggers=True)
