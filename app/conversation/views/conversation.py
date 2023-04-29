@@ -7,7 +7,6 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from app.settings import AUTH_USER_MODEL
 from conversation.models import ConversationModel, PatientModel
 from conversation.serializers import ConversationDetailSerializer, ConversationSerializer, ConversationUploadSerializer
 
