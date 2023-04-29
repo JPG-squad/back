@@ -169,18 +169,18 @@ class ConversationUploadView(GenericAPIView):
                 job_status = transcribe.get_transcription_job(TranscriptionJobName=job_name)["TranscriptionJob"][
                     "TranscriptionJobStatus"
                 ]
-                logger.info("Transcription job status: %s", job_status)
+                logger.debug("Transcription job status: %s", job_status)
                 # wait for the transcription job to complete
                 while job_status == "IN_PROGRESS":
                     job_status = transcribe.get_transcription_job(TranscriptionJobName=job_name)["TranscriptionJob"][
                         "TranscriptionJobStatus"
                     ]
-                    logger.info("Transcription job status: %s", job_status)
+                    logger.debug("Transcription job status: %s", job_status)
                 # if the job completed successfully, retrieve the transcription result and store it in S3
                 if job_status == "COMPLETED":
                     response = s3.get_object(Bucket=bucket_name, Key=file_name.replace(".wav", ".json"))
                     transcription_json = json.loads(response["Body"].read().decode("utf-8"))
-                    logger.info("Transcription job response: %s", transcription_json)
+                    logger.debug("Transcription job response: %s", transcription_json)
                 else:
                     logger.error("Transcription job failed with status: %s", job_status)
                 transcribe.delete_transcription_job(TranscriptionJobName=job_name)
