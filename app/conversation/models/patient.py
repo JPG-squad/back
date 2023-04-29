@@ -1,13 +1,16 @@
 from django.db import models
-from .relevant_point import RelevantPointModel
 
 
 class PatientModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    email = models.EmailField(max_length=255, null=False, blank=False, unique=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     phone_number = models.CharField(max_length=255, null=True, blank=True)
-    relevant_points = models.ManyToManyField(RelevantPointModel)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ("created_at",)
+        ordering = ("updated_at",)
+        verbose_name_plural = "Patients"
+
+    def __str__(self) -> str:
+        return self.name
