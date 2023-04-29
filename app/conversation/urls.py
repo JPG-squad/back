@@ -9,6 +9,8 @@ from conversation.views import (
     ConversationView,
     PatientDetailView,
     PatientView,
+    RelevantPointDetailView,
+    RelevantPointView,
 )
 
 app_name = "conversation"
@@ -27,4 +29,6 @@ urlpatterns = [
         ConversationUploadView.as_view(),
         name="patient-conversation-upload",
     ),
+    path("relevant-point/", RelevantPointView.as_view(), name="relevant-point"),
+    path("relevant-point/<int:relevant_point_id>", RelevantPointDetailView.as_view(), name="relevant-point-detail"),
 ]
