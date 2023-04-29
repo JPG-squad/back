@@ -21,6 +21,30 @@ class ConversationView(GenericAPIView):
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 
+class ConversationDetailView(GenericAPIView):
+
+    serializer_class = ConversationSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, id):
+        queryset = ConversationModel.objects.filter(id=id)
+        serializer = ConversationSerializer(queryset, many=True)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+
+class ConversationView(GenericAPIView):
+
+    serializer_class = ConversationSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        queryset = ConversationModel.objects.all()
+        serializer = ConversationSerializer(queryset, many=True)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+
 def start_job(job_name, bucket_name, file_name, media_format, language_code, transcribe_client, vocabulary_name=None):
     """Start an asynchronous transcription job."""
     media_uri = f"s3://{bucket_name}/{file_name}"
