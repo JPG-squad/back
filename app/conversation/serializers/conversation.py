@@ -14,6 +14,7 @@ class ConversationSerializer(serializers.ModelSerializer):
             "title",
             "description",
         ]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class ConversationDetailSerializer(serializers.ModelSerializer):
@@ -29,6 +30,7 @@ class ConversationDetailSerializer(serializers.ModelSerializer):
             "description",
             "conversation",
         ]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class ConversationUploadSerializer(serializers.Serializer):

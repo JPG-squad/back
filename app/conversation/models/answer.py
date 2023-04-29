@@ -1,12 +1,12 @@
 from django.db import models
 
+from .patient import PatientModel
 from .relevant_point import RelevantPointModel
 
-class AnswerVersionModel(models.Model):
+class AnswerModel(models.Model):
     text = models.TextField()
-    relevant_point = models.ForeignKey(
-        RelevantPointModel, related_name="relevant_point", on_delete=models.CASCADE, null=False
-    )
+    patient = models.ForeignKey(PatientModel, related_name="answers", on_delete=models.CASCADE, null=False)
+    relevant_point = models.ForeignKey(RelevantPointModel, related_name="answers", on_delete=models.CASCADE, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

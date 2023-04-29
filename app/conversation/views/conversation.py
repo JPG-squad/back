@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from os import environ
 
@@ -211,6 +212,11 @@ class ConversationUploadView(GenericAPIView):
                 transcribed_file_s3_path=file_name.replace(".wav", ".json"),
                 conversation=json.dumps(conversation_json),
             )
+
+            # We update the user updated_at attribute so it goes to the top of the list when sorted in the frontend
+            user = request.user
+            user.update(updated_at=datetime.now())
+
             return Response(status=status.HTTP_200_OK, data={"title": title, "description": description})
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
