@@ -1,41 +1,101 @@
-# AWS Hackathon 2023
+<h1 align="center"> Backend  </h1> <br>
 
-## backend
-JPG -- backend
+<p align="center">
+  AWS Hackathon for Good, Squad JPG backend project
+</p>
 
-### Commands used:
+
+## Table of Contents
+- [Table of Contents](#table-of-contents)
+- [Setup](#setup)
+  - [Requirements](#requirements)
+  - [One time configuration](#one-time-configuration)
+  - [Build](#build)
+  - [Start](#start)
+- [Local development](#local-development)
+  - [Managing databases](#managing-databases)
+  - [Debugging](#debugging)
+  - [Tests](#tests)
+- [Deployment](#deployment)
+  - [On push main publish a new version](#on-push-main-publish-a-new-version)
+
+
+## Setup
+
+### Requirements
+
+Check that you have installed:
+* Poetry
+* Pre-commit
+
+### One time configuration
+
+
+In a terminal inside this project directory:
+Configure poetry (if it not already exists, Poetry will create a new virtual enviornment in this directory too, in a `.venv` folder):
 ```bash
 poetry install
-poetry add black --group dev
-docker-compose run --rm back bash -c "django-admin startproject app ."
-docker-compose build
+```
+And once installed all the libraries with poetry, remember to configiure pre-commit and autoupdate to set the versions of the libraries to the required by pre-commit:
+```bash
+pre-commit install
+pre-commit autoupdate
+```
+
+### Build
+
+```bash
+docker-compose build --ssh default
+```
+
+### Start
+In order to start the Base service we need to start the servicies that it uses, to do it execute:
+```bash
 docker-compose up
 ```
+You can now execute service endpoints using Swagger UI: open http://localhost:8777/api/docs
 
-Then, the backend runs in http://localhost:8777
-And we can find the api documentation on: http://localhost:8777/api/docs
+Django admin is also available: open http://localhost:8777/admin
 
-Command for creating `user` django app:
+
+## Local development
+
+### Managing databases
+For developing propouses we have databases dumps under the [dumps](dumps) folder, you can restore them with the following command:
 ```bash
-docker-compose run --rm back bash -c "python manage.py startapp user"
-```
-For the `user` app, after creating, we have deleted: migrations, admin and models because these are going to be in the `core` app.
-
-Format all the project in the beggining:
-```bash
-black .
+bash scripts/restore.sh
 ```
 
-Lint command:
+Also you can create dumps of your current databases and save them under the [dumps](dumps) folder with the following command:
 ```bash
-docker-compose run --rm back bash -c "flake8"
-or
-docker-compose exec back bash -c "flake8"
+bash scripts/dump.sh
 ```
 
-Create super user:
+Will create a day-month-year-hour-minute.dump file and then anyone can restore it and have updated data.
+
+### Debugging
+TODO
+To raise the service in debug mode, first you must update the DEBUGPY environment variable at [env-local](env-local):
 ```bash
-docker-compose run --rm back bash -c "python manage.py createsuperuser"
-or
-docker-compose exec back bash -c "python manage.py createsuperuser"
-````
+DEBUGPY=True
+```
+Then you can start the service as explained at [Start](###start).
+
+Once the service has started, open the debug view on vscode:
+
+<b>command + alt + D</b>
+
+Then we can attach to data-service configuration to debug the service in general, you can put a breakpoint inside any file of the `src` directory and the application will stop once it reaches the point.
+
+### Tests
+STILL TO DO
+
+## Deployment
+
+In this repository we have two principal brances: **main**.
+And the following CI / CD pipelines:
+
+### On push main publish a new version
+
+1. Automatic bumps a new version tag from main branch and creates a release with it.
+2. Builds and pushes the new docker image from the main branch to the ECR and deploys with blue/green deployment.

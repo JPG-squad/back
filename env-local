@@ -2,6 +2,8 @@
 POSTGRES_DB=devdb
 POSTGRES_USER=devuser
 POSTGRES_PASSWORD=changeme
+PGPASSWORD=changeme
+PGUSER=devuser
 
 # Used for Django container
 DB_HOST=db

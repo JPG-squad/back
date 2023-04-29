@@ -1,13 +1,5 @@
 {
-  "python.languageServer": "Pylance",
   "python.terminal.activateEnvInCurrentTerminal": true,
-  "python.linting.enabled": true,
-  "python.linting.flake8Enabled": true,
-  "python.linting.flake8Args": ["--config=./app/.flake8"],
-  "python.formatting.provider": "black",
-  "editor.defaultFormatter": null,
-  "editor.formatOnSave": true,
-  "files.trimTrailingWhitespace": true,
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#efa395",
     "activityBar.background": "#efa395",
@@ -28,4 +20,23 @@
     "titleBar.inactiveForeground": "#15202b99"
   },
   "peacock.color": "#E87C69",
+  "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}/"
+    },
+    "ruff.args": ["--config=./pyproject.toml"],
+    "ruff.path": [".venv/bin/ruff"],
+    "[python]": {
+        "gitlens.codeLens.symbolScopes": [
+            "!Module"
+        ],
+        "editor.wordBasedSuggestions": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": true,
+            "source.fixAll.ruff": true,
+            "source.organizeImports.ruff": true
+        },
+    },
+    "python.linting.flake8Enabled": true,
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true
 }
