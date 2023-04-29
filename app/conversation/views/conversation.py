@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from app.settings import AUTH_USER_MODEL
 from conversation.models import ConversationModel, PatientModel
-from conversation.serializers import ConversationSerializer, ConversationUploadSerializer
+from conversation.serializers import ConversationDetailSerializer, ConversationSerializer, ConversationUploadSerializer
 
 bucket_name = environ.get("BUCKET_NAME")
 
@@ -112,7 +112,7 @@ class ConversationView(GenericAPIView):
 
 
 class ConversationDetailView(GenericAPIView):
-    serializer_class = ConversationSerializer
+    serializer_class = ConversationDetailSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
@@ -120,7 +120,7 @@ class ConversationDetailView(GenericAPIView):
         conversation = ConversationModel.objects.get(
             id=conversation_id, patient_id=patient_id, patient_id__user_id=request.user.id
         )
-        serializer = ConversationSerializer(conversation)
+        serializer = ConversationDetailSerializer(conversation)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 
@@ -132,7 +132,7 @@ class ConversationUploadView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, patient_id):
-        execute_transcribe = False
+        execute_transcribe = True
 
         s3 = boto3.client("s3")
         transcribe = boto3.client("transcribe")
