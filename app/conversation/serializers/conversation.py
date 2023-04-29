@@ -5,7 +5,17 @@ from conversation.models import ConversationModel
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConversationModel
-        fields = ["id", "user", "patient", "created_at", "updated_at", "wav_file_s3_path", "transcribed_file_s3_path"]
+        fields = [
+            "id",
+            "user",
+            "patient",
+            "created_at",
+            "updated_at",
+            "wav_file_s3_path",
+            "transcribed_file_s3_path",
+            "title",
+            "description",
+        ]
 
 
 class ConversationUploadSerializer(serializers.Serializer):

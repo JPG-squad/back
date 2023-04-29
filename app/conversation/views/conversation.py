@@ -2,13 +2,12 @@ import json
 from os import environ
 
 import boto3
-from django.contrib.auth import get_user_model
 import openai
 from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from conversation.models import ConversationModel, PatientModel
+from conversation.models import ConversationModel
 from conversation.serializers import ConversationSerializer, ConversationUploadSerializer
 
 bucket_name = environ.get("BUCKET_NAME")
@@ -75,8 +74,8 @@ class ConversationView(GenericAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        queryset = ConversationModel.objects.all()
+    def get(self, request, patient_id):
+        queryset = ConversationModel.objects.filter(user_id=request.user.id, patient_id=patient_id)
         serializer = ConversationSerializer(queryset, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
@@ -86,8 +85,8 @@ class ConversationDetailView(GenericAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, id):
-        queryset = ConversationModel.objects.filter(id=id)
+    def get(self, request, patient_id, conversation_id):
+        queryset = ConversationModel.objects.filter(user_id=request.user.id, patient_id=patient_id, id=conversation_id)
         serializer = ConversationSerializer(queryset, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
@@ -99,7 +98,7 @@ class ConversationUploadView(GenericAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
+    def post(self, request, patient_id):
         serializer = ConversationUploadSerializer(data=request.data)
         if serializer.is_valid():
             file = request.FILES["conversation_file"]
@@ -143,8 +142,8 @@ class ConversationUploadView(GenericAPIView):
             description_question = "Create a one paragraph summary of this conversation of maximum 30 words."
             description = ask_question(transcription_result, description_question)
             ConversationModel.objects.create(
-                user=get_user_model().objects.get(id=request.data["user_id"]),
-                patient=PatientModel.objects.get(id=request.data["patient_id"]),
+                user=request.user.id,
+                patient=patient_id,
                 title=title,
                 description=description,
                 wav_file_s3_path=file_name,
