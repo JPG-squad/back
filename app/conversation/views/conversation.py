@@ -13,8 +13,6 @@ from conversation.serializers import ConversationSerializer, ConversationUploadS
 
 bucket_name = environ.get("BUCKET_NAME")
 
-### Helper funcitons begin ###
-
 
 def ask_question(context, question):
     prompt = f"Q: {question}\nA:"
@@ -70,9 +68,6 @@ def start_job(
         raise
     else:
         return job
-
-
-### Helper funcitons end ###
 
 
 class ConversationView(GenericAPIView):
@@ -145,7 +140,7 @@ class ConversationUploadView(GenericAPIView):
 
             title_question = "Create a title for this conversation of maximum 7 words."
             title = ask_question(transcription_result, title_question)
-            description_question = "Create a one paragraph summary of this conversation of maximum 30 words." ""
+            description_question = "Create a one paragraph summary of this conversation of maximum 30 words."
             description = ask_question(transcription_result, description_question)
             ConversationModel.objects.create(
                 user=get_user_model().objects.get(id=request.data["user_id"]),

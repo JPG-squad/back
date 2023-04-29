@@ -25,6 +25,7 @@
     },
     "ruff.args": ["--config=./pyproject.toml"],
     "ruff.path": [".venv/bin/ruff"],
+    "python.linting.flake8Args": ["--max-line-length=120"],
     "[python]": {
         "gitlens.codeLens.symbolScopes": [
             "!Module"

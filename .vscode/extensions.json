@@ -8,6 +8,7 @@
       "ms-python.python",
       "donjayamanne.python-environment-manager",
       "redhat.vscode-yaml",
-      "bungcip.better-toml"
+      "bungcip.better-toml",
+      "charliermarsh.ruff"
     ]
   }
