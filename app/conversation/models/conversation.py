@@ -3,7 +3,6 @@ from django.db import models
 from .patient import PatientModel
 from app.settings import AUTH_USER_MODEL
 
-
 class ConversationModel(models.Model):
     title = models.CharField(max_length=255, null=False, blank=False)
     description = models.TextField(null=False, blank=False)

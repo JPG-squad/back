@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from conversation.models import PatientModel
 from conversation.serializers import PatientSerializer
 
-
 class PatientView(GenericAPIView):
     serializer_class = PatientSerializer
     authentication_classes = [authentication.TokenAuthentication]

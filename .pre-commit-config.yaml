@@ -37,9 +37,3 @@ repos:
       - id: ruff
         args:
           - --fix # Enables autofixing
-
-  - repo: https://github.com/psf/black # Refer to this repository for futher documentation about black hook
-    rev: 23.3.0
-    hooks:
-      - id: black
-        language_version: python3

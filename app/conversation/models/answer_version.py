@@ -2,7 +2,6 @@ from django.db import models
 
 from .relevant_point import RelevantPointModel
 
-
 class AnswerVersionModel(models.Model):
     text = models.TextField()
     relevant_point = models.ForeignKey(
