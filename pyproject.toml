@@ -102,7 +102,8 @@ ignore = [
     "B026", # Star-arg unpacking after a keyword argument is strongly discouraged
     "B905", # `zip()` without an explicit `strict=` parameter
     # "E701", # multiple statements on one line
-    "N818"  # Error suffix on exception class names
+    "N818",  # Error suffix on exception class names
+    "F403","F401"
 ]
 target-version = "py39"
 
@@ -157,7 +158,7 @@ exclude = '''
     | dist
     | migrations
   )/
-  | foo.py           # also separately exclude a file named foo.py in
+  | foo.py | __init__.py           # also separately exclude a file named foo.py in
                      # the root of the project
 )
 '''

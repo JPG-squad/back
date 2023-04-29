@@ -1,13 +1,12 @@
+from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework import status, authentication, permissions
 
 from conversation.models import PatientModel
 from conversation.serializers import PatientSerializer
 
 
 class PatientView(GenericAPIView):
-
     serializer_class = PatientSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]

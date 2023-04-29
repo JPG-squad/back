@@ -73,19 +73,19 @@ fi
 
 # Terminate current connections expect the one we are using
 if ! docker-compose exec db psql -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND pg_stat_activity.datname='devdb'" ; then
-    print_red "\nError terminating database connections.\n" 
+    print_red "\nError terminating database connections.\n"
     exit
 fi
 
 # Droping the database
 if ! docker-compose exec db dropdb -f devdb --username=devuser --if-exists; then
-    print_red "\nError dropping the devdb database.\n" 
+    print_red "\nError dropping the devdb database.\n"
     exit
 fi
 
 # Creating a new fresh database
 if ! docker-compose exec db createdb devdb --username=devuser; then
-    print_red "\nError creating devdb database.\n" 
+    print_red "\nError creating devdb database.\n"
     exit
 fi
 

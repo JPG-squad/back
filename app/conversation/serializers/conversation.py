@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.fields import FileField
 
 from conversation.models import ConversationModel
 

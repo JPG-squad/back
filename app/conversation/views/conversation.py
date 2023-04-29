@@ -1,15 +1,15 @@
+import json
+from os import environ
+
+import boto3
+from django.contrib.auth import get_user_model
+import openai
+from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework import status, authentication, permissions
-
-import json
-import openai
-from os import environ
-import boto3
 
 from conversation.models import ConversationModel, PatientModel
 from conversation.serializers import ConversationSerializer, ConversationUploadSerializer
-from django.contrib.auth import get_user_model
 
 bucket_name = environ.get("BUCKET_NAME")
 
@@ -76,7 +76,6 @@ def start_job(
 
 
 class ConversationView(GenericAPIView):
-
     serializer_class = ConversationSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -88,25 +87,12 @@ class ConversationView(GenericAPIView):
 
 
 class ConversationDetailView(GenericAPIView):
-
     serializer_class = ConversationSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, id):
         queryset = ConversationModel.objects.filter(id=id)
-        serializer = ConversationSerializer(queryset, many=True)
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
-
-
-class ConversationView(GenericAPIView):
-
-    serializer_class = ConversationSerializer
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        queryset = ConversationModel.objects.all()
         serializer = ConversationSerializer(queryset, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 

@@ -3,7 +3,7 @@ URL mappings for the conversation API.
 """
 from django.urls import path
 
-from conversation.views import ConversationView, ConversationDetailView, ConversationUploadView, PatientView
+from conversation.views import ConversationDetailView, ConversationUploadView, ConversationView, PatientView
 
 app_name = "conversation"
 

@@ -1,6 +1,7 @@
 from django.db import models
-from app.settings import AUTH_USER_MODEL
+
 from .patient import PatientModel
+from app.settings import AUTH_USER_MODEL
 
 
 class ConversationModel(models.Model):
