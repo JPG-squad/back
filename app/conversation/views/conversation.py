@@ -204,6 +204,7 @@ class ConversationUploadView(GenericAPIView):
                 wav_file_s3_path=file_name,
                 transcribed_file_s3_path=file_name.replace(".wav", ".json"),
                 conversation=json.dumps(conversation_json),
+                duration=transcription_json["results"]["speaker_labels"]["segments"][-1]["end_time"],
             )
 
             # We update the user updated_at attribute so it goes to the top of the list when sorted in the frontend
