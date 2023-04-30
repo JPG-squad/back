@@ -19,7 +19,7 @@ app_name = "conversation"
 
 urlpatterns = [
     path(
-        "conversation/<int:conversation_id>/ephemeral-answer",
+        "conversation/<int:conversation_id>/ephemeral-answer/",
         EphemeralAnswerView.as_view(),
         name="conversation-ephemeral-answer",
     ),
