@@ -207,10 +207,10 @@ class ConversationUploadView(GenericAPIView):
                 duration=transcription_json["results"]["speaker_labels"]["segments"][-1]["end_time"],
             )
 
-            # We update the user updated_at attribute so it goes to the top of the list when sorted in the frontend
-            user = request.user
-            user.updated_at = datetime.now()
-            user.save()
+            # We update the patient updated_at attribute so it goes to the top of the list when sorted in the frontend
+            patient = PatientModel.objects.get(id=patient_id)
+            patient.updated_at = datetime.now()
+            patient.save()
 
             return Response(status=status.HTTP_200_OK, data={"title": title, "description": description})
         else:
