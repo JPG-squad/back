@@ -120,7 +120,7 @@ class ConversationUploadView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, patient_id):
-        execute_transcribe = False
+        execute_transcribe = True
 
         s3 = boto3.client("s3")
         transcribe = boto3.client("transcribe")
