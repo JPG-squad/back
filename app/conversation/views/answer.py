@@ -12,17 +12,17 @@ class AnswerView(GenericAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, patient_id, conversation_id):
-        """Get all the answers a patient has given and the relevant points of these answers."""
-        queryset = AnswerModel.objects.filter(patient_id=patient_id, conversation_id=conversation_id)
-        if queryset.exists():
-            serializer = AnswerSerializer(queryset, many=True)
-            items = []
-            for answer in serializer.data:
-                print(answer)
-                item = {}
-                item["question"] = AnswerModel.objects.get(id=answer["id"]).relevant_point.text
-                item["answer"] = answer["text"]
-                items.append(item)
-            return Response(status=status.HTTP_200_OK, data=items)
-        return Response(status=status.HTTP_200_OK, data=[])
+    # def get(self, request, patient_id, conversation_id):
+    #     """Get all the answers a patient has given and the relevant points of these answers."""
+    #     queryset = AnswerModel.objects.filter(patient_id=patient_id, conversation_id=conversation_id)
+    #     if queryset.exists():
+    #         serializer = AnswerSerializer(queryset, many=True)
+    #         items = []
+    #         for answer in serializer.data:
+    #             print(answer)
+    #             item = {}
+    #             item["question"] = AnswerModel.objects.get(id=answer["id"]).relevant_point.text
+    #             item["answer"] = answer["text"]
+    #             items.append(item)
+    #         return Response(status=status.HTTP_200_OK, data=items)
+    #     return Response(status=status.HTTP_200_OK, data=[])

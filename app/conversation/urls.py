@@ -8,6 +8,7 @@ from conversation.views import (
     ConversationDetailView,
     ConversationUploadView,
     ConversationView,
+    EphemeralAnswerView,
     PatientDetailView,
     PatientView,
     RelevantPointDetailView,
@@ -17,6 +18,11 @@ from conversation.views import (
 app_name = "conversation"
 
 urlpatterns = [
+    path(
+        "conversation/<int:conversation_id>/ephemeral-answer",
+        EphemeralAnswerView.as_view(),
+        name="conversation-ephemeral-answer",
+    ),
     path("patient/", PatientView.as_view(), name="patient"),
     path("patient/<int:patient_id>", PatientDetailView.as_view(), name="patient-detail"),
     path("patient/<int:patient_id>/conversation/", ConversationView.as_view(), name="patient-conversations"),
