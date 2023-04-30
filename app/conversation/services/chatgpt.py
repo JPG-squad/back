@@ -13,7 +13,7 @@ class ChatGPTService:
         prompt = f"Q: {question}\nA:"
         logger.info("Asking to chatgpt: %s", prompt)
         response = Completion.create(
-            engine="text-davinci-002",
+            engine="text-davinci-003",
             prompt=context + prompt,
             temperature=0.5,
             max_tokens=1000,

@@ -120,7 +120,7 @@ class ConversationUploadView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, patient_id):
-        execute_transcribe = True
+        execute_transcribe = False
 
         s3 = boto3.client("s3")
         transcribe = boto3.client("transcribe")
@@ -169,11 +169,11 @@ class ConversationUploadView(GenericAPIView):
                 transcription_json = json.loads(response["Body"].read().decode("utf-8"))
 
             conversation_json = parse_transcribe_conversation(transcription_json)
-            question = '''Can you improve the conversation json as it can have some litte errors,
-                        if so return me the json improved without aditional text.'''
+            question = '''Aqui tienes una respuesta en JSON de AWS transcribe, corrige el JSON y mejora la respuesta.
+            Quiero que arregles las frases sin sentido, hay veces que faltan partes que estan en el siguiente elemento.
+            Se tan creativo como quieras y devuelveme un JSON valido en formato UTF8:\n'''
             logger.info("Conversation json: %s", conversation_json)
-
-            ChatGPTService.ask(json.dumps(conversation_json), question)
+            conversation_json = json.loads(ChatGPTService.ask(str(conversation_json), question).replace("'", '"'))
             logger.info("Conversation json improved: %s", conversation_json)
 
             question = '''Can you identify which speaker is the employee, it must had said somethink like:
