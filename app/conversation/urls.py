@@ -30,7 +30,11 @@ urlpatterns = [
         ConversationUploadView.as_view(),
         name="patient-conversation-upload",
     ),
-    path("patient/<int:patient_id>/answer/", AnswerView.as_view(), name="patient-answer"),
+    path(
+        "patient/<int:patient_id>/conversation/<int:conversation_id>/answer/",
+        AnswerView.as_view(),
+        name="patient-conversation-answer",
+    ),
     path("relevant-point/", RelevantPointView.as_view(), name="relevant-point"),
     path("relevant-point/<int:relevant_point_id>", RelevantPointDetailView.as_view(), name="relevant-point-detail"),
 ]

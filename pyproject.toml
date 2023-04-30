@@ -18,8 +18,6 @@ openai = "^0.27.5"
 pydub = "^0.25.1"
 colorlog = "^6.7.0"
 python-json-logger = "^2.0.7"
-whisper = "^1.1.10"
-whisperx = {git = "ssh://git@github.com/m-bain/whisperx", rev = "v2.0.1"}
 
 # LOCAL DEPENDECIES FOR DEVELOPMENT
 [tool.poetry.group.dev.dependencies]

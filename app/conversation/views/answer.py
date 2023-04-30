@@ -12,9 +12,9 @@ class AnswerView(GenericAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, patient_id):
+    def get(self, request, patient_id, conversation_id):
         """Get all the answers a patient has given and the relevant points of these answers."""
-        queryset = AnswerModel.objects.filter(patient_id=patient_id)
+        queryset = AnswerModel.objects.filter(patient_id=patient_id, conversation_id=conversation_id)
         if queryset.exists():
             serializer = AnswerSerializer(queryset, many=True)
             items = []
