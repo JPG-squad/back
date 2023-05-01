@@ -43,7 +43,7 @@ pre-commit autoupdate
 ```
 Create network:
 ```bash
-docker network create --driver bridge --subnet 172.18.0.0/16 jpg-network > /dev/null 2>&1
+docker network create --driver bridge --subnet 172.19.0.0/16 jpg-network > /dev/null 2>&1
 ```
 
 ### Build
