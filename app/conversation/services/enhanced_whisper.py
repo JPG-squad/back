@@ -55,10 +55,6 @@ class EnchancedWhisperService:
         "Das tu consentimiento que esta conversacion va ser grabada?"
         Respond with the speaker identifier only'''
         logger.info(f"Conversation json: {transcription}")
-        speakers = []
-        for item in transcription:
-            if item["speaker"] not in speakers:
-                speakers.append(item["speaker"])
         employee_speaker_id = ChatGPTService.ask(json.dumps(transcription), question)
         logger.info("Employee speaker id: %s", employee_speaker_id)
 
@@ -67,12 +63,27 @@ class EnchancedWhisperService:
                 transcription[i]["speaker"] = employee_name
             else:
                 transcription[i]["speaker"] = patient_name
+
         speakers_changed = []
         for item in transcription:
             if item["speaker"] not in speakers_changed:
                 speakers_changed.append(item["speaker"])
+
+        # replace duplicated speakers followed elements in transcription
+        final_transcription = []
+        speaker = ""
+        speaker_text = ""
+        for i, item in enumerate(transcription):
+            if speaker == item["speaker"]:
+                speaker_text += item["text"]
+            else:
+                if speaker_text != "":
+                    final_transcription.append({"speaker": speaker, "text": speaker_text})
+                speaker = item["speaker"]
+                speaker_text = item["text"]
+
         transcription_formatted = {
-            "conversation": transcription,
+            "conversation": final_transcription,
             "speakers": speakers_changed,
         }
         return transcription_formatted
