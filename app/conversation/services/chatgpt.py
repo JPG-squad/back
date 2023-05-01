@@ -4,6 +4,7 @@ from openai import Completion
 
 from app.settings import LOGGER_NAME
 
+
 logger = logging.getLogger(LOGGER_NAME)
 
 

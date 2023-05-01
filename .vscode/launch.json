@@ -1,0 +1,22 @@
+// { TODO
+//     "version": "0.2.0",
+//     "configurations": [
+//       {
+//         "name": "Debug: Attach to Service",
+//         "type": "python",
+//         "request": "attach",
+//         "connect": {
+//           "host": "localhost",
+//           "port": 5678
+//         },
+//         "pathMappings": [
+//           {
+//             "localRoot": "${workspaceFolder}/src",
+//             "remoteRoot": "/app"
+//           }
+//         ],
+//         "justMyCode": true
+//       }
+//     ]
+//   }
+  

@@ -6,6 +6,7 @@ from conversation.models import ConversationModel, EphemeralAnswerModel
 from conversation.serializers import EphemeralAnswerSerializer
 from conversation.services import ChatGPTService
 
+
 class EphemeralAnswerView(GenericAPIView):
     """Create and retrieve ephemeral answers for a conversation."""
 

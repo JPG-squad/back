@@ -2,6 +2,7 @@ from django.db import models
 
 from .conversation import ConversationModel
 
+
 class EphemeralAnswerModel(models.Model):
     question = models.TextField()
     answer = models.TextField()

@@ -6,6 +6,7 @@ import boto3
 from .chatgpt import ChatGPTService
 from app.settings import LOGGER_NAME
 
+
 logger = logging.getLogger(LOGGER_NAME)
 
 

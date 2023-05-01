@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from conversation.models import RelevantPointModel
 
+
 class RelevantPointSerializer(serializers.ModelSerializer):
     """Serializer for the Relevant Point object."""
 

@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from conversation.models import PatientModel
 from conversation.serializers import PatientSerializer
 
+
 class PatientView(GenericAPIView):
     """Get all patients of the authenticated user and create a new patient for the user."""
 

@@ -1,31 +1,31 @@
 {
-  "python.terminal.activateEnvInCurrentTerminal": true,
-  "workbench.colorCustomizations": {
-    "activityBar.activeBackground": "#efa395",
-    "activityBar.background": "#efa395",
-    "activityBar.foreground": "#15202b",
-    "activityBar.inactiveForeground": "#15202b99",
-    "activityBarBadge.background": "#158a27",
-    "activityBarBadge.foreground": "#e7e7e7",
-    "commandCenter.border": "#15202b99",
-    "sash.hoverBorder": "#efa395",
-    "statusBar.background": "#e87c69",
-    "statusBar.foreground": "#15202b",
-    "statusBarItem.hoverBackground": "#e1553d",
-    "statusBarItem.remoteBackground": "#e87c69",
-    "statusBarItem.remoteForeground": "#15202b",
-    "titleBar.activeBackground": "#e87c69",
-    "titleBar.activeForeground": "#15202b",
-    "titleBar.inactiveBackground": "#e87c6999",
-    "titleBar.inactiveForeground": "#15202b99"
-},
-  "peacock.color": "#E87C69",
-  "terminal.integrated.env.osx": {
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#efa395",
+        "activityBar.background": "#efa395",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#158a27",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "commandCenter.border": "#15202b99",
+        "sash.hoverBorder": "#efa395",
+        "statusBar.background": "#e87c69",
+        "statusBar.foreground": "#15202b",
+        "statusBarItem.hoverBackground": "#e1553d",
+        "statusBarItem.remoteBackground": "#e87c69",
+        "statusBarItem.remoteForeground": "#15202b",
+        "titleBar.activeBackground": "#e87c69",
+        "titleBar.activeForeground": "#15202b",
+        "titleBar.inactiveBackground": "#e87c6999",
+        "titleBar.inactiveForeground": "#15202b99"
+    },
+    "peacock.color": "#E87C69",
+    "terminal.integrated.env.osx": {
         "PYTHONPATH": "${workspaceFolder}/"
     },
+    "editor.formatOnSave": true,
     "ruff.args": ["--config=./pyproject.toml"],
     "ruff.path": [".venv/bin/ruff"],
-    "python.linting.flake8Args": ["--max-line-length=120"],
     "[python]": {
         "gitlens.codeLens.symbolScopes": [
             "!Module"
@@ -35,9 +35,12 @@
             "source.fixAll": true,
             "source.fixAll.ruff": true,
             "source.organizeImports.ruff": true
-        },
+        }
     },
-    "python.linting.flake8Enabled": true,
     "python.formatting.provider": "black",
-    "editor.formatOnSave": true
+    "python.languageServer": "Pylance", // use Pylance to get advantatge of it's features
+    "python.analysis.autoImportCompletions": true, // Enable feature for auto imports
+    "files.associations": { //
+        "env-local*": "shellscript"
+    },
 }
