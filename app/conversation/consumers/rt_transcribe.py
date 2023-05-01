@@ -23,7 +23,8 @@ class TranscribeConsumer(WebsocketConsumer):
         pass
 
     def receive(self, text_data):
-        logger.info(F"Received message: {text_data}")
+        logger.info(f"We are in the conversation: {self.scope['url_route']['kwargs']['conversation_id']}")
+        logger.info(f"Received message: {text_data}")
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
 

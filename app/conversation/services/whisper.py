@@ -11,7 +11,7 @@ from app.settings import LOGGER_NAME
 logger = logging.getLogger(LOGGER_NAME)
 
 
-class EnchancedWhisperService:
+class WhisperService:
     def __init__(self, bucket_name, file, pacient_id, user_id):
         self.file = file
         self.s3 = boto3.client("s3")
@@ -24,6 +24,7 @@ class EnchancedWhisperService:
 
         logger.info("Uploading file %s to bucket %s", self.file_name, self.bucket_name)
         self.s3.upload_fileobj(file, self.bucket_name, self.file_name)
+        logger.info("File uploaded successfully")
 
     def get_transcription(self):
         return self.transcription
@@ -33,7 +34,7 @@ class EnchancedWhisperService:
 
     def transcribe(self):
         # set the URL of the endpoint
-        url = 'http://ia:80/ia/transcribe-deprecated'
+        url = 'http://ia:80/ia/transcribe'
 
         # set the parameters for the request
         params = {
@@ -45,9 +46,17 @@ class EnchancedWhisperService:
         response = requests.post(url, json=params)
         logger.info(response.status_code)
         logger.info(response.json())
-        self.transcription = response.json()
+        self.transcription = response.json()["segments"]
+        self.duration = response.json()["segments"][-1]["end"]
+        transcription_formatted = []
+        for _i, item in enumerate(self.transcription):
+            if _i % 2 == 0:
+                speaker_turn = "speaker_0"
+            else:
+                speaker_turn = "speaker_1"
+            transcription_formatted.append({"speaker": speaker_turn, "text": item["text"]})
+        self.transcription = transcription_formatted
         logger.info(self.transcription)
-        self.duration = self.transcription[-1]["end"]
         return False
 
     def update_speaker_names(self, transcription, employee_name, patient_name):
@@ -69,21 +78,8 @@ class EnchancedWhisperService:
             if item["speaker"] not in speakers_changed:
                 speakers_changed.append(item["speaker"])
 
-        # replace duplicated speakers followed elements in transcription
-        final_transcription = []
-        speaker = ""
-        speaker_text = ""
-        for item in enumerate(transcription):
-            if speaker == item["speaker"]:
-                speaker_text += item["text"]
-            else:
-                if speaker_text != "":
-                    final_transcription.append({"speaker": speaker, "text": speaker_text})
-                speaker = item["speaker"]
-                speaker_text = item["text"]
-
         transcription_formatted = {
-            "conversation": final_transcription,
+            "conversation": transcription,
             "speakers": speakers_changed,
         }
         return transcription_formatted
