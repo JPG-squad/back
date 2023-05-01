@@ -21,6 +21,8 @@ services:
       bash -c "python manage.py wait_for_db &&
                python manage.py migrate &&
                python manage.py runserver 0.0.0.0:80"
+    networks:
+      - jpg-network
 
   db:
     container_name: db
@@ -31,6 +33,12 @@ services:
       - 5432:5432
     volumes:
       - db-data:/var/lib/postgresql/data
+    networks:
+      - jpg-network
 
 volumes:
   db-data:
+
+networks:
+  jpg-network:
+    external: true

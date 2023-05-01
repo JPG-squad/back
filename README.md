@@ -41,6 +41,10 @@ And once installed all the libraries with poetry, remember to configiure pre-com
 pre-commit install
 pre-commit autoupdate
 ```
+Create network:
+```bash
+docker network create --driver bridge --subnet 172.18.0.0/16 jpg-network > /dev/null 2>&1
+```
 
 ### Build
 
