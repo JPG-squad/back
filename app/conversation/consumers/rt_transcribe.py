@@ -2,7 +2,6 @@ import json
 import logging
 
 from channels.generic.websocket import WebsocketConsumer
-from rest_framework import authentication, permissions
 
 from app.settings import LOGGER_NAME
 
