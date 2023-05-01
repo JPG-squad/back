@@ -26,10 +26,10 @@ class EnchancedWhisperService:
         self.s3.upload_fileobj(file, self.bucket_name, self.file_name)
 
     def get_transcription(self):
-        return
+        return self.transcription
 
     def get_duration(self):
-        return
+        return self.duration
 
     def transcribe(self):
         # set the URL of the endpoint
@@ -45,7 +45,34 @@ class EnchancedWhisperService:
         response = requests.post(url, json=params)
         logger.info(response.status_code)
         logger.info(response.json())
-        return
+        self.transcription = response.json()
+        logger.info(self.transcription)
+        self.duration = self.transcription[-1]["end"]
+        return False
 
-    def _improve_transcription(self, transcription):
-        return
+    def update_speaker_names(self, transcription, employee_name, patient_name):
+        question = '''Can you identify which speaker is the employee, it must had said somethink like:
+        "Das tu consentimiento que esta conversacion va ser grabada?"
+        Respond with the speaker identifier only'''
+        logger.info(f"Conversation json: {transcription}")
+        speakers = []
+        for item in transcription:
+            if item["speaker"] not in speakers:
+                speakers.append(item["speaker"])
+        employee_speaker_id = ChatGPTService.ask(json.dumps(transcription), question)
+        logger.info("Employee speaker id: %s", employee_speaker_id)
+
+        for i, item in enumerate(transcription):
+            if item["speaker"] == employee_speaker_id:
+                transcription[i]["speaker"] = employee_name
+            else:
+                transcription[i]["speaker"] = patient_name
+        speakers_changed = []
+        for item in transcription:
+            if item["speaker"] not in speakers_changed:
+                speakers_changed.append(item["speaker"])
+        transcription_formatted = {
+            "conversation": transcription,
+            "speakers": speakers_changed,
+        }
+        return transcription_formatted
