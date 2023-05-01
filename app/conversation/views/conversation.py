@@ -58,7 +58,7 @@ class ConversationUploadView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, patient_id):
-        execute_transcribe = False
+        execute_transcribe = True
 
         serializer = ConversationUploadSerializer(data=request.data)
         patient = PatientModel.objects.get(id=patient_id)
@@ -73,7 +73,7 @@ class ConversationUploadView(GenericAPIView):
             logger.info("1")
             if execute_transcribe:
                 error = transcribe_service.transcribe()
-                logger.info(error)
+                logger.error(error)
                 if error:
                     return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
