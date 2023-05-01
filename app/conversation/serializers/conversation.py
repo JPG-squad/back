@@ -51,3 +51,15 @@ class ConversationUploadSerializer(serializers.Serializer):
     def validate(self, data):
         data.pop("conversation_file")
         return data
+
+
+class ConversatioDownloadSerializer(serializers.Serializer):
+    conversation_file = serializers.FileField(write_only=True)
+
+    def validate(self, data):
+        data.pop("conversation_file")
+        return data
+
+
+class ConversationDownloadSerializer(serializers.Serializer):
+    ...
