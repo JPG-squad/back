@@ -1,9 +1,31 @@
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+import json
+import logging
 
-class PracticeConsumer(AsyncJsonWebsocketConsumer):
-    async def connect(self):
-        await self.accept()
+from channels.generic.websocket import WebsocketConsumer
+from rest_framework import authentication, permissions
 
-    async def receive(self, text_data=None, bytes_data=None, **kwargs):
-        if text_data == 'PING':
-            await self.send('PONG')
+from app.settings import LOGGER_NAME
+
+logger = logging.getLogger(LOGGER_NAME)
+
+
+class TranscribeConsumer(WebsocketConsumer):
+    def connect(self):
+        if self.scope["user"].is_anonymous:
+            logger.warning("Anonymous user tried to connect to websocket, access denied.")
+            self.close()
+        else:
+            logger.info(
+                f"User with id: {self.scope['user'].id} and email: {self.scope['user'].email} connected to websocket!"
+            )
+            self.accept()
+
+    def disconnect(self, close_code):
+        pass
+
+    def receive(self, text_data):
+        logger.info(F"Received message: {text_data}")
+        text_data_json = json.loads(text_data)
+        message = text_data_json["message"]
+
+        self.send(text_data=json.dumps({"message": message}))
