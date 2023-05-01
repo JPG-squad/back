@@ -17,7 +17,7 @@ from conversation.serializers import (
     ConversationSerializer,
     ConversationUploadSerializer,
 )
-from conversation.services import AWSTranscribeService, ChatGPTService
+from conversation.services import AWSTranscribeService, ChatGPTService, EnchancedWhisperService
 
 bucket_name = environ.get("BUCKET_NAME")
 logger = logging.getLogger(LOGGER_NAME)
@@ -68,16 +68,19 @@ class ConversationUploadView(GenericAPIView):
             file_name = file.name
 
             # if engine == aws use AWS service otherwise use the other service
-            transcribe_service = AWSTranscribeService(bucket_name, file)
-
+            # transcribe_service = AWSTranscribeService(bucket_name, file)
+            transcribe_service = EnchancedWhisperService(bucket_name, file, patient_id, request.user.id)
+            logger.info("1")
             if execute_transcribe:
                 error = transcribe_service.transcribe()
+                logger.info(error)
                 if error:
                     return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+                logger.info("2")
                 transcription = transcribe_service.get_transcription()
                 duration = transcribe_service.get_duration()
-
+                logger.info("3")
                 patient_name = patient.name
                 employee_name = request.user.name
                 transcription = transcribe_service.update_speaker_names(transcription, employee_name, patient_name)
