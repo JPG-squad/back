@@ -6,6 +6,7 @@ from django.urls import path
 from conversation.views import (
     AnswerView,
     ConversationDetailView,
+    ConversationDownloadView,
     ConversationUploadView,
     ConversationView,
     EphemeralAnswerView,
@@ -35,6 +36,11 @@ urlpatterns = [
         "patient/<int:patient_id>/conversation/upload/",
         ConversationUploadView.as_view(),
         name="patient-conversation-upload",
+    ),
+    path(
+        "patient/<int:patient_id>/conversation/<int:conversation_id>/download/",
+        ConversationDownloadView.as_view(),
+        name="patient-conversation-download",
     ),
     path(
         "patient/<int:patient_id>/conversation/<int:conversation_id>/answer/",

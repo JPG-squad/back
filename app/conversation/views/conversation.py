@@ -4,13 +4,19 @@ import logging
 from os import environ
 
 import boto3
+from django.http import HttpResponse
 from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from app.settings import LOGGER_NAME
 from conversation.models import ConversationModel, PatientModel
-from conversation.serializers import ConversationDetailSerializer, ConversationSerializer, ConversationUploadSerializer
+from conversation.serializers import (
+    ConversationDetailSerializer,
+    ConversationDownloadSerializer,
+    ConversationSerializer,
+    ConversationUploadSerializer,
+)
 from conversation.services import AWSTranscribeService, ChatGPTService
 
 bucket_name = environ.get("BUCKET_NAME")
@@ -52,9 +58,7 @@ class ConversationUploadView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, patient_id):
-        execute_transcribe = True
-
-        boto3.client("s3")
+        execute_transcribe = False
 
         serializer = ConversationUploadSerializer(data=request.data)
         patient = PatientModel.objects.get(id=patient_id)
@@ -104,3 +108,23 @@ class ConversationUploadView(GenericAPIView):
                 return Response(status=status.HTTP_200_OK, data={"title": title, "description": description})
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ConversationDownloadView(GenericAPIView):
+    serializer_class = ConversationDownloadSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, patient_id, conversation_id):
+        conversation = ConversationModel.objects.filter(
+            id=conversation_id, patient_id=patient_id, patient_id__user_id=request.user.id
+        )
+        if conversation.exists():
+            s3_file_path = conversation[0].wav_file_s3_path
+            s3_response = boto3.client("s3").get_object(Bucket=bucket_name, Key=s3_file_path)
+            content = s3_response['Body'].read()
+            response = HttpResponse(status=status.HTTP_200_OK, content=content, content_type=s3_response['ContentType'])
+            response['Content-Disposition'] = f'attachment; filename="{s3_file_path}"'
+            return response
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
