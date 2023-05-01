@@ -11,5 +11,5 @@ DB_NAME=devdb
 DB_USER=devuser
 DB_PASS=changeme
 
-BUCKET_NAME="fundcraft-backend-dev"
+BUCKET_NAME="jpg-backend-dev"
 OPENAI_API_KEY=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
