@@ -66,11 +66,15 @@ class ConversationUploadView(GenericAPIView):
 
         if serializer.is_valid() and patient is not None:
             file = request.FILES["conversation_file"]
-            file_name = file.name
+
+            now = datetime.now()
+            now_str = now.strftime('%Y_%m_%d_%H_%M_%S_%f')
+
+            file_name = f"{patient_id}_{request.user.id}_{now_str}_{file.name}"
 
             # if engine == aws use AWS service otherwise use the other service
             # transcribe_service = AWSTranscribeService(bucket_name, file)
-            transcribe_service = WhisperService(bucket_name, file, patient_id, request.user.id)
+            transcribe_service = WhisperService(bucket_name, file, file_name)
             logger.info("1")
             if execute_transcribe:
                 error = transcribe_service.transcribe()

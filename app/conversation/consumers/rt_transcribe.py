@@ -30,7 +30,7 @@ async def basic_transcribe(audio_data):
 
     # Start transcription to generate async stream
     stream = await client.start_stream_transcription(
-        language_code="es-ES",
+        language_code="es-US",
         media_sample_rate_hz=16000,
         media_encoding="ogg-opus",
     )

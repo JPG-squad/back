@@ -13,15 +13,11 @@ logger = logging.getLogger(LOGGER_NAME)
 
 
 class WhisperService:
-    def __init__(self, bucket_name, file, pacient_id, user_id):
+    def __init__(self, bucket_name, file, file_name):
         self.file = file
         self.s3 = boto3.client("s3")
         self.bucket_name = bucket_name
-
-        now = datetime.datetime.now()
-        now_str = now.strftime('%Y_%m_%d_%H_%M_%S_%f')
-
-        self.file_name = f"{pacient_id}_{user_id}_{now_str}_{file.name}"
+        self.file_name = file_name
 
         logger.info("Uploading file %s to bucket %s", self.file_name, self.bucket_name)
         self.s3.upload_fileobj(file, self.bucket_name, self.file_name)
