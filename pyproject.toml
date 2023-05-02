@@ -20,6 +20,7 @@ colorlog = "^6.7.0"
 python-json-logger = "^2.0.7"
 channels = "^4.0.0"
 daphne = "^4.0.0"
+amazon-transcribe = "^0.6.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.10.0"
