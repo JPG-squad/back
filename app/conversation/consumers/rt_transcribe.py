@@ -5,6 +5,7 @@ import logging
 from amazon_transcribe.client import TranscribeStreamingClient
 from amazon_transcribe.handlers import TranscriptResultStreamHandler
 from amazon_transcribe.model import TranscriptEvent
+from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
 from app.settings import LOGGER_NAME
@@ -60,7 +61,10 @@ class TranscribeConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         logger.info(f"We are in the conversation: {self.scope['url_route']['kwargs']['conversation_id']}")
         logger.info("Received message")
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(basic_transcribe(bytes_data))
-        loop.close()
+
+        async def transcribe_audio(audio_data):
+            transcript = await basic_transcribe(audio_data)
+            print(transcript)
+
+        async_to_sync(transcribe_audio)(bytes_data)
         self.send('recieved')
