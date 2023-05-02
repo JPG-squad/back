@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from conversation.models import PatientModel
 
+
 class PatientSerializer(serializers.ModelSerializer):
     """Serializaer for the patient object."""
 

@@ -43,24 +43,24 @@ find = {}  # Scanning implicit namespaces is active by default
 
 ######## ------------------- TEST CONFIGURATIONS ------------------- ########
 
-# [tool.pytest.ini_options]
-# testpaths = "tests"
-# python_files = ["tests.py","test_*.py"]
-# pythonpath = "src"
+[tool.pytest.ini_options]
+testpaths = "tests"
+python_files = ["tests.py","test_*.py"]
+pythonpath = "src"
 
 # env = No environment at the moment
 
 # addopts: Add the specified OPTS to the set of command line arguments
-# addopts = """--durations=5  \
-#     -p no:warnings \
-#     --cov=. \
-#     --no-cov-on-fail \
-#     --cov-report term-missing \
-#     --cov-report term:skip-covered \
-#     --cov-report xml \
-#     --cov-report html \
-#     --cov-branch \
-#     --cov-fail-under=70"""
+addopts = """--durations=5  \
+    -p no:warnings \
+    --cov=. \
+    --no-cov-on-fail \
+    --cov-report term-missing \
+    --cov-report term:skip-covered \
+    --cov-report xml \
+    --cov-report html \
+    --cov-branch \
+    --cov-fail-under=70"""
 #--durations=5  Show N slowest setup/test durations
 #-p no:warnings   Disable catching warnings during test execution ( documentation: https://docs.pytest.org/en/stable/how-to/capture-warnings.html)
 #--cov=.   Destination of the coverage files
@@ -86,6 +86,7 @@ find = {}  # Scanning implicit namespaces is active by default
 
 [tool.ruff] # Documentation: https://beta.ruff.rs/docs
 line-length = 120 # Same as Black.
+ignore-init-module-imports = true
 # Rules documentation: https://beta.ruff.rs/docs/rules/
 select = [
     "E",    # pycodestyle errors
@@ -95,8 +96,8 @@ select = [
     "C",    # flake8-comprehensions
     "B",    # flake8-bugbear,
     "N",    # pep8-naming
-    "I",    # isort
-]
+    "I" ]   # isort
+
 ignore = [
     "B008", # do not perform function calls in argument defaults
     "C901", # too complex
@@ -105,10 +106,10 @@ ignore = [
     "B024", # abstract base class, but it has no abstract methods
     "B026", # Star-arg unpacking after a keyword argument is strongly discouraged
     "B905", # `zip()` without an explicit `strict=` parameter
-    # "E701", # multiple statements on one line
-    "N818",  # Error suffix on exception class names
-    "F403","F401"
-]
+    "F403", # from .conversation import *` used; unable to detect undefined names
+    "F401", #`.answer.AnswerModel` imported but unused; consider adding to `__all__` or using a redundant alias
+    "N818"]  # Error suffix on exception class names
+
 target-version = "py39"
 
 # We do not especify exclude directories and files as default configuration matches our use case.
@@ -126,8 +127,7 @@ section-order = ["future",
     "standard-library",
     "third-party",
     "first-party",
-    "local-folder"
-]
+    "local-folder"]
 
 # Our libraries used on the project, must be added here, then they will be groupped together
 known-first-party = []
@@ -138,7 +138,7 @@ known-local-folder = ["app", "conversation", "core", "user"]
 # Third party libraries used on the project, must be added here, then they will be groupped together
 known-third-party = ["fastapi","boto3","pandas","psycopg2-binary"]
 
-lines-after-imports = 1
+lines-after-imports = 2
 lines-between-types = 0
 
 [tool.black]
@@ -146,9 +146,7 @@ line-length = 120
 skip-string-normalization = true
 target-version = ['py39']
 include = '\.pyi?$'
-exclude = '''
-
-(
+exclude = '''/(
   /(
       \.eggs         # exclude a few common directories in the
     | \.git          # root of the project
@@ -162,7 +160,11 @@ exclude = '''
     | dist
     | migrations
   )/
-  | foo.py | __init__.py           # also separately exclude a file named foo.py in
+  | foo.py           # also separately exclude a file named foo.py in
                      # the root of the project
-)
+)/
 '''
+
+[tool.pylint]
+max-line-length = 120
+disable = ["C0112","C0114","C0115","C0116"]

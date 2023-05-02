@@ -4,6 +4,7 @@ from .conversation import ConversationModel
 from .patient import PatientModel
 from .relevant_point import RelevantPointModel
 
+
 class AnswerModel(models.Model):
     text = models.TextField()
     patient = models.ForeignKey(PatientModel, related_name="answers", on_delete=models.CASCADE, null=False)

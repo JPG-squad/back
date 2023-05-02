@@ -5,6 +5,7 @@ from channels.generic.websocket import WebsocketConsumer
 
 from app.settings import LOGGER_NAME
 
+
 logger = logging.getLogger(LOGGER_NAME)
 
 

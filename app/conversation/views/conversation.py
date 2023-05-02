@@ -17,7 +17,8 @@ from conversation.serializers import (
     ConversationSerializer,
     ConversationUploadSerializer,
 )
-from conversation.services import AWSTranscribeService, ChatGPTService, WhisperService
+from conversation.services import ChatGPTService, WhisperService
+
 
 bucket_name = environ.get("BUCKET_NAME")
 logger = logging.getLogger(LOGGER_NAME)

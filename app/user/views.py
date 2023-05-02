@@ -8,6 +8,7 @@ from rest_framework.settings import api_settings
 
 from user.serializers import AuthTokenSerializer, UserSerializer
 
+
 # The CreateAPIView it's a view designed to handle http post requests
 # Abstracts a lot of the logic, we simply have to indicate a serializer class to handle it
 

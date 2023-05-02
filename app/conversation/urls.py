@@ -16,6 +16,7 @@ from conversation.views import (
     RelevantPointView,
 )
 
+
 app_name = "conversation"
 
 urlpatterns = [

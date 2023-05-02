@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from conversation.models import RelevantPointModel
 from conversation.serializers import RelevantPointSerializer
 
+
 class RelevantPointView(GenericAPIView):
     """Get all the relevant points and create a new relevant point."""
 

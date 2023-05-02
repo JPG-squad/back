@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from conversation.models import AnswerModel
 
+
 class AnswerSerializer(serializers.ModelSerializer):
     """Serializaer for the answer object."""
 

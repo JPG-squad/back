@@ -1,9 +1,8 @@
-from rest_framework import authentication, permissions, status
+from rest_framework import authentication, permissions
 from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
 
-from conversation.models import AnswerModel, PatientModel, RelevantPointModel
 from conversation.serializers import AnswerSerializer
+
 
 class AnswerView(GenericAPIView):
     """Get all the answers for a patient and the relevant points of these answers."""

@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from conversation.models import EphemeralAnswerModel
 
+
 class EphemeralAnswerSerializer(serializers.ModelSerializer):
     """Serializaer for the Ephemeral Answer object."""
 
