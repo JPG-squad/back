@@ -13,3 +13,5 @@ DB_PASS=changeme
 
 BUCKET_NAME="jpg-backend-dev"
 OPENAI_API_KEY=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
+
+DEEPGRAM_API_KEY=97bee8db226ba0ec64ed0fa81bc5b8bb6318d7f0
