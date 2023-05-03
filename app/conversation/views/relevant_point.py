@@ -80,7 +80,7 @@ class RelevantPointAnswerView(GenericAPIView):
     """
     post_context_prompt = """
         \n\n Responde a la pregunta que te voy a hacer. Si no sabes o no se menciona la respuesta
-        en el contexto, responde con "No". Si sí que lo sabes, respon solo con la información
+        en el contexto, responde con "0". Si sí que lo sabes, respon solo con la información
         que se te pide. La pregunta es la siguiente: \n\n
     """
 
@@ -93,7 +93,7 @@ class RelevantPointAnswerView(GenericAPIView):
             question = rp.text
             current_anwer_object = AnswerModel.objects.filter(patient_id=patient_id, relevant_point_id=rp.id).first()
             if not current_anwer_object:
-                answer = "No"
+                answer = "0"
                 new_answer_object = AnswerModel(patient_id=patient_id, relevant_point_id=rp.id, text=answer)
                 new_answer_object.save()
             else:
@@ -103,10 +103,9 @@ class RelevantPointAnswerView(GenericAPIView):
                 else:
                     context = self.pre_context_prompt + rt_context + self.post_context_prompt
                     answer = ChatGPTService.ask(context, question)
-                    current_anwer_object.text = answer
-                    current_anwer_object.save()
-                    logger.info(f"Context: {context}")
-                    logger.info(f"Answer to question {question}: {answer}")
+                    if answer != "0":
+                        current_anwer_object.text = answer
+                        current_anwer_object.save()
             all_answers.append({"question": question, "answer": answer})
 
         return Response(status=status.HTTP_200_OK, data=all_answers)
