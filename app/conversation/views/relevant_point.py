@@ -1,10 +1,16 @@
+import logging
+
 from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from app.settings import LOGGER_NAME
 from conversation.models import AnswerModel, RelevantPointModel
 from conversation.serializers import RelevantPointAnswerSerializer, RelevantPointSerializer
 from conversation.services import ChatGPTService
+
+
+logger = logging.getLogger(LOGGER_NAME)
 
 
 class RelevantPointView(GenericAPIView):
@@ -81,20 +87,29 @@ class RelevantPointAnswerView(GenericAPIView):
     def post(self, request, patient_id):
         """Get the answers to the relevant points of a patient."""
         rps = RelevantPointModel.objects.all()
+
         all_answers = []
         for rp in rps:
             question = rp.text
-            current_anwer_object = AnswerModel.objects.get(patient_id=patient_id, relevant_point_id=rp.id)
+            current_anwer_object = AnswerModel.objects.filter(patient_id=patient_id, relevant_point_id=rp.id).first()
+            logger.info("Current answer object: {current_anwer_object}")
             if not current_anwer_object:
                 answer = "No"
-                AnswerModel.objects.create(patient_id=patient_id, relevant_point_id=rp.id, text=answer)
+                new_answer_object = AnswerModel(patient_id=patient_id, relevant_point_id=rp.id, text=answer)
+                new_answer_object.save()
             else:
+                logger.info("2")
                 rt_context = request.data.get("context")
-                if rt_context != "":
+                if rt_context == "":
                     answer = current_anwer_object.text
                 else:
+                    logger.info("3")
                     context = self.pre_context_prompt + rt_context + self.post_context_prompt
                     answer = ChatGPTService.ask(context, question)
+                    current_anwer_object.answer = answer
+                    current_anwer_object.save()
+                    logger.info(f"Context: {context}")
+                    logger.info(f"Answer to question {question}: {answer}")
             all_answers.append({"question": question, "answer": answer})
 
         return Response(status=status.HTTP_200_OK, data=all_answers)

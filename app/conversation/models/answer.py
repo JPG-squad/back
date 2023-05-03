@@ -14,6 +14,10 @@ class AnswerModel(models.Model):
     class Meta:
         ordering = ("updated_at",)
         verbose_name_plural = "Answers"
+        unique_together = (
+            'patient',
+            'relevant_point',
+        )
 
     def __str__(self):
         return self.text
