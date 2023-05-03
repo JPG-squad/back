@@ -27,7 +27,7 @@ urlpatterns = [
         name="conversation-ephemeral-answer",
     ),
     path("patient/", PatientView.as_view(), name="patient"),
-    path("patient/<int:patient_id>", PatientDetailView.as_view(), name="patient-detail"),
+    path("patient/<int:patient_id>/", PatientDetailView.as_view(), name="patient-detail"),
     path("patient/<int:patient_id>/conversation/", ConversationView.as_view(), name="patient-conversations"),
     path(
         "patient/<int:patient_id>/conversation/<int:conversation_id>/",

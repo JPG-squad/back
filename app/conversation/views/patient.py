@@ -39,7 +39,7 @@ class PatientDetailView(GenericAPIView):
         """Get a specific patient of the authenticated user."""
         queryset = PatientModel.objects.filter(user_id=request.user.id, id=patient_id)
         serializer = PatientSerializer(queryset, many=True)
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+        return Response(status=status.HTTP_200_OK, data=serializer.data[0])
 
     def delete(self, request, patient_id):
         """Delete a patient of the authenticated user."""

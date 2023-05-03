@@ -2,7 +2,7 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from conversation.models import RelevantPointModel
+from conversation.models import AnswerModel, RelevantPointModel
 from conversation.serializers import RelevantPointAnswerSerializer, RelevantPointSerializer
 from conversation.services import ChatGPTService
 
@@ -85,8 +85,16 @@ class RelevantPointAnswerView(GenericAPIView):
         for rp in rps:
             question = rp.text
             rt_context = request.data.get("context")
-            context = self.pre_context_prompt + rt_context + self.post_context_prompt
-            answer = ChatGPTService.ask(context, question)
+            if rt_context != "":
+                context = self.pre_context_prompt + rt_context + self.post_context_prompt
+                answer = ChatGPTService.ask(context, question)
+            else:
+                current_anwer_object = AnswerModel.objects.get(patient_id=patient_id, relevant_point_id=rp.id)
+                if not current_anwer_object:
+                    answer = "No"
+                    # new
+                else:
+                    answer = current_anwer_object.text
             all_answers.append({"question": question, "answer": answer})
 
         return Response(status=status.HTTP_200_OK, data=all_answers)
