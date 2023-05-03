@@ -20,6 +20,10 @@ RUN --mount=type=ssh,id=default --mount=type=cache,mode=0777,target=/root/.cache
 
 FROM python:${PYTHON_VERSION}-slim
 
+RUN apt-get update; apt-get dist-upgrade -y \
+    && apt-get install -qq ffmpeg -y \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build-image /srv/venv/ /srv/venv/
 
 ENV PYTHONUNBUFFERED=1
