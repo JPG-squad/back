@@ -75,13 +75,14 @@ class RelevantPointAnswerView(GenericAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     pre_context_prompt = """
-        A continuacion te voy a pasar una transcripcion de una conversacion
-        en tiempo real entre dos personas como contexto: \n\n
+        A continuación, te proporcionaré un contexto de conversación
+        entre dos personas en tiempo real: \n\n
     """
     post_context_prompt = """
-        \n\n Responde a la pregunta que te voy a hacer. Si no sabes o no se menciona la respuesta
-        en el contexto, responde con "0". Si sí que lo sabes, respon solo con la información
-        que se te pide. La pregunta es la siguiente: \n\n
+        \n\n Responde a la pregunta que se te presenta a continuación.
+        Si desconoces la respuesta o esta no está mencionada en el contexto,
+        responde con "0". En caso de conocer la respuesta, proporciona la información solicitada.
+        La pregunta es la siguiente: \n\n
     """
 
     def post(self, request, patient_id):
