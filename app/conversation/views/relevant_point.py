@@ -74,13 +74,22 @@ class RelevantPointAnswerView(GenericAPIView):
     serializer_class = RelevantPointAnswerSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    # pre_context_prompt = """
+    #     Eres un trabajador que tiene que rellenar un formulario con una serie de preguntas.
+    #     Estas entrevistando a un usuario en una primera toma de contacto. Tu serás el que hace
+    #     las preguntas en el contexto, y el usuario será el que las responda.
+    #     Te voy a proporcionar el contexto y una pregunta o campo que debes rellenar.
+    #     Solo debes responder con informacion del usuario.
+    #     Si no sabes responder a esa pregunta/campo, contesta solamente con un '0'.
+    #     Si sabes la respuesta a la pregunta o al campo que debes rellenar,
+    #     no vuelvas a escribir la pregunta o el nombre del campo, simplemente contesta con el valor. \n
+    #     Contexto:
+    # """
     pre_context_prompt = """
-        Eres un trabajador que tiene que rellenar un formulario con una serie de preguntas.
-        Te voy a proporcionar un contexto y una pregunta o campo que debes rellenar.
-        Si no sabes responder a esa pregunta/campo, contesta solamente con un '0'.
-        Si sabes la respuesta a la pregunta o al campo que debes rellenar,
-        no vuelvas a escribir la pregunta o el nombre del campo, simplemente contesta con el valor. \n
-        Contexto:
+        Te voy a mandar un trozo de una conversacion a un usuario que ha venido a buscar ayuda en la Cruz Roja.
+        También te mandaré una pregunta o un campo el cual quiero que me digas si con el trozo de la conversación
+        que te he mandado se ha contestado. Solo quiero que me contestes con '1' (si es que si) o '0' (Si es que no).
+        La conversacion ha sido la siguiente.
     """
 
     def post(self, request, patient_id):
@@ -100,8 +109,9 @@ class RelevantPointAnswerView(GenericAPIView):
                 if rt_context == "":
                     answer = current_anwer_object.text
                 else:
-                    context = self.pre_context_prompt + " " + rt_context + " \nPregunta: "
-                    answer = ChatGPTService.ask(context, question)
+                    context = self.pre_context_prompt + " " + rt_context + " \\Queremos saber si se ha hablado de: "
+                    question_to_chat = question + '. Contesta solo con 1 o 0'
+                    answer = ChatGPTService.ask(context, question_to_chat)
                     if answer != "0":
                         current_anwer_object.text = answer
                         current_anwer_object.save()

@@ -15,7 +15,7 @@ class ChatGPTService:
         response = Completion.create(
             engine="text-davinci-003",
             prompt=f"{context + question}",
-            temperature=0.7,
+            temperature=0.5,
             max_tokens=1000,
             n=1,
             stop=None,
