@@ -16,6 +16,7 @@ class ConversationSerializer(serializers.ModelSerializer):
             "transcribed_file_s3_path",
             "title",
             "description",
+            "status",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
@@ -33,6 +34,8 @@ class ConversationDetailSerializer(serializers.ModelSerializer):
             "transcribed_file_s3_path",
             "title",
             "description",
+            "status",
+            "draft",
             "conversation",
             "duration",
         ]

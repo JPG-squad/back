@@ -3,7 +3,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from conversation.models import RelevantPointModel
-from conversation.serializers import RelevantPointSerializer
+from conversation.serializers import RelevantPointAnswerSerializer, RelevantPointSerializer
+from conversation.services import ChatGPTService
 
 
 class RelevantPointView(GenericAPIView):
@@ -56,3 +57,36 @@ class RelevantPointDetailView(GenericAPIView):
             relevant_point_to_udpate.update(**request.data)
             return Response(status=status.HTTP_200_OK, data={"message": "Relevant Point updated."})
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class RelevantPointAnswerView(GenericAPIView):
+    """
+    View for the endpoint that receives a context and returns the answers
+    to the relevant points of a patient.
+    """
+
+    serializer_class = RelevantPointAnswerSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    pre_context_prompt = """
+        A continuacion te voy a pasar una transcripcion de una conversacion
+        en tiempo real entre dos personas como contexto: \n\n
+    """
+    post_context_prompt = """
+        \n\n Responde a la pregunta que te voy a hacer. Si no sabes o no se menciona la respuesta
+        en el contexto, responde con "No". Si sí que lo sabes, respon solo con la información
+        que se te pide. La pregunta es la siguiente: \n\n
+    """
+
+    def post(self, request, patient_id):
+        """Get the answers to the relevant points of a patient."""
+        rps = RelevantPointModel.objects.all()
+        all_answers = []
+        for rp in rps:
+            question = rp.text
+            rt_context = request.data.get("context")
+            context = self.pre_context_prompt + rt_context + self.post_context_prompt
+            answer = ChatGPTService.ask(context, question)
+            all_answers.append({"question": question, "answer": answer})
+
+        return Response(status=status.HTTP_200_OK, data=all_answers)
