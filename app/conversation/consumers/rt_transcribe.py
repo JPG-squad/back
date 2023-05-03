@@ -1,7 +1,3 @@
-import asyncio
-import base64
-from io import BytesIO
-import json
 import logging
 import os
 from typing import Dict
@@ -37,10 +33,12 @@ class TranscribeConsumer(AsyncWebsocketConsumer):
             raise Exception(f'Could not open socket: {e}')
 
     async def connect(self):
+        logger.info(f"User with id: {self.scope['url_route']['kwargs']['user_id']} connected to websocket!")
         await self.connect_to_deepgram()
         await self.accept()
 
     async def disconnect(self, close_code):
+        logger.info(f"User with id: {self.scope['url_route']['kwargs']['user_id']} disconnected from websocket.")
         await self.close()
 
     async def receive(self, bytes_data):
