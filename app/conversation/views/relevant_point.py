@@ -84,17 +84,17 @@ class RelevantPointAnswerView(GenericAPIView):
         all_answers = []
         for rp in rps:
             question = rp.text
-            rt_context = request.data.get("context")
-            if rt_context != "":
-                context = self.pre_context_prompt + rt_context + self.post_context_prompt
-                answer = ChatGPTService.ask(context, question)
+            current_anwer_object = AnswerModel.objects.get(patient_id=patient_id, relevant_point_id=rp.id)
+            if not current_anwer_object:
+                answer = "No"
+                AnswerModel.objects.create(patient_id=patient_id, relevant_point_id=rp.id, text=answer)
             else:
-                current_anwer_object = AnswerModel.objects.get(patient_id=patient_id, relevant_point_id=rp.id)
-                if not current_anwer_object:
-                    answer = "No"
-                    # new
-                else:
+                rt_context = request.data.get("context")
+                if rt_context != "":
                     answer = current_anwer_object.text
+                else:
+                    context = self.pre_context_prompt + rt_context + self.post_context_prompt
+                    answer = ChatGPTService.ask(context, question)
             all_answers.append({"question": question, "answer": answer})
 
         return Response(status=status.HTTP_200_OK, data=all_answers)
