@@ -103,7 +103,7 @@ class RelevantPointAnswerView(GenericAPIView):
                 else:
                     context = self.pre_context_prompt + rt_context + self.post_context_prompt
                     answer = ChatGPTService.ask(context, question)
-                    current_anwer_object.answer = answer
+                    current_anwer_object.text = answer
                     current_anwer_object.save()
                     logger.info(f"Context: {context}")
                     logger.info(f"Answer to question {question}: {answer}")
