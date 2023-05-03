@@ -9,8 +9,9 @@ from amazon_transcribe.handlers import TranscriptResultStreamHandler
 from amazon_transcribe.model import TranscriptEvent
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer
-from pydub import AudioSegment
 
+# import pyaudio
+# from pydub import AudioSegment
 from app.settings import LOGGER_NAME
 
 
@@ -77,23 +78,42 @@ class TranscribeConsumer(AsyncWebsocketConsumer):
                 f"User with id: {self.scope['user'].id} and email: {self.scope['user'].email} connected to websocket!"
             )
             await self.accept()
+            self.input_queue = asyncio.Queue()
             await self.send(text_data="Connection established!")
-            self.stream = await stream_client.start_stream_transcription(
-                language_code="es-US",
-                media_sample_rate_hz=16000,
-                media_encoding="ogg-opus",
+            self.loop = asyncio.get_event_loop()
+            self.stream = await self.loop.create_task(
+                stream_client.start_stream_transcription(
+                    language_code="es-US",
+                    media_sample_rate_hz=16000,
+                    media_encoding="ogg-opus",
+                )
             )
+
+            print('Hola Pau')
             self.handler = MyEventHandler(self.stream.output_stream)
 
     async def disconnect(self, close_code):
         await self.stream.input_stream.end_stream()
 
+    async def transcribe(self):
+        async def write_chunks():
+            logger.info("Writing chunks...")
+            async for chunk in websocket_stream(self.input_queue):
+                await self.stream.input_stream.send_audio_event(audio_chunk=chunk)
+            await self.stream.input_stream.end_stream()
+
+        await asyncio.gather(write_chunks(), self.handler.handle_events())
+
     async def receive(self, text_data=None, bytes_data=None):
         logger.info(f"We are in the conversation: {self.scope['url_route']['kwargs']['conversation_id']}")
         logger.info("Received message")
-        group = await asyncio.gather(
-            self.stream.input_stream.send_audio_event(audio_chunk=bytes_data), self.handler.handle_events()
-        )
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(group)
-        loop.close()
+        self.loop.call_soon_threadsafe(self.input_queue.put_nowait, bytes_data)
+        logger.info("We have reached here")
+        self.loop.run_until_complete(self.transcribe())
+        self.loop.close()
+
+
+async def websocket_stream(queue):
+    while True:
+        indata = await queue.get()
+        yield indata
