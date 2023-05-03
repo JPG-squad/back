@@ -75,14 +75,12 @@ class RelevantPointAnswerView(GenericAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     pre_context_prompt = """
-        A continuación, te proporcionaré un contexto de conversación
-        entre dos personas en tiempo real: \n\n
-    """
-    post_context_prompt = """
-        \n\n Responde a la pregunta que se te presenta a continuación.
-        Si desconoces la respuesta o esta no está mencionada en el contexto,
-        responde con "0". En caso de conocer la respuesta, proporciona la información solicitada.
-        La pregunta es la siguiente: \n\n
+        Eres un trabajador que tiene que rellenar un formulario con una serie de preguntas.
+        Te voy a proporcionar un contexto y una pregunta o campo que debes rellenar.
+        Si no sabes responder a esa pregunta/campo, contesta solamente con un '0'.
+        Si sabes la respuesta a la pregunta o al campo que debes rellenar,
+        no vuelvas a escribir la pregunta o el nombre del campo, simplemente contesta con el valor. \n
+        Contexto:
     """
 
     def post(self, request, patient_id):
@@ -102,7 +100,7 @@ class RelevantPointAnswerView(GenericAPIView):
                 if rt_context == "":
                     answer = current_anwer_object.text
                 else:
-                    context = self.pre_context_prompt + rt_context + self.post_context_prompt
+                    context = self.pre_context_prompt + " " + rt_context + " \nPregunta: "
                     answer = ChatGPTService.ask(context, question)
                     if answer != "0":
                         current_anwer_object.text = answer

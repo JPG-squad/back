@@ -11,11 +11,10 @@ logger = logging.getLogger(LOGGER_NAME)
 class ChatGPTService:
     @staticmethod
     def ask(context, question):
-        prompt = f"Q: {question}\nA:"
-        logger.info("Asking to chatgpt: %s", prompt)
+        logger.info("Asking to chatgpt: %s", question)
         response = Completion.create(
             engine="text-davinci-003",
-            prompt=context + prompt,
+            prompt=f"{context + question}",
             temperature=0.5,
             max_tokens=1000,
             n=1,
