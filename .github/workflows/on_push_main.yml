@@ -1,0 +1,155 @@
+name: On Push main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ################################## BUILD AND PUSH ##################################
+  build_and_push:
+    name:  Build & Push
+    runs-on: self-hosted
+    outputs:
+      image_uri: ${{ steps.gha_build_and_push.outputs.image_uri }}
+      tag: ${{ steps.gha_build_and_push.outputs.tag }}
+
+    steps:
+
+      - name: Checkout main branch
+        uses: actions/checkout@v3
+
+      - name: Configure github user 
+        shell: bash
+        run: |
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git config --global user.name "${GITHUB_ACTOR}"
+
+      - name: Fetch last tags
+        shell: bash
+        run: |
+          git fetch origin --tags --force
+
+      - name: Get next tag
+        id: get_next_tag
+        shell: bash
+        run: |
+          last_tag=`git describe --tags $(git rev-list --tags --max-count=1)`
+          echo "Last tag: ${last_tag}";
+          if [ -z "${last_tag}" ];then
+            echo "last tag is empty: $last_tag"
+            exit 1
+          fi
+          next_tag="${last_tag%.*}.$((${last_tag##*.}+1))"
+          echo "3) Next tag: ${next_tag}";
+          echo "next_tag=$next_tag" >> $GITHUB_OUTPUT
+    
+      - name: Create new release tag 
+        shell: bash
+        run: |
+          echo "4) Forcing tag update..."
+          git tag -a ${{ steps.get_next_tag.outputs.next_tag }} -m "${INPUT_MESSAGE}" "${GITHUB_SHA}" -f
+          echo "5) Forcing tag push..."
+          git push --tags -f
+
+      - name: 🏗 Get release tag
+        id: release_tag
+        shell: bash
+        run: |
+          TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: 🎉 Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.release_tag.outputs.tag }}
+
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
+          aws-region: eu-south-2
+          mask-aws-account-id: "no"
+
+      - name: 🔐 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: 🏗 Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2.4.1
+
+      - name: 🏗 Prepare Image tags
+        shell: bash
+        id: prep
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          TAG=$( echo ${{ steps.release_tag.outputs.tag }} )
+          TAGS="${ECR_REGISTRY}/backend:${TAG}"
+          TAGS="$TAGS, ${ECR_REGISTRY}/backend:latest"
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "tagged_image=${ECR_REGISTRY}/backend:${TAG}" >> $GITHUB_OUTPUT
+
+      - name: 🏗 Build and push image 🚀
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          file: Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          platforms: 'linux/arm64'
+          push: true
+          tags: ${{ steps.prep.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          build-args: |
+            BUILD_VERSION=${{ steps.prep.outputs.tag }}
+            POETRY_DEV=false
+
+    ################################## DEPLOY ##################################
+
+  deploy:
+    name: Deploy
+    needs:
+      [
+        build_and_push
+      ]
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
+          aws-region: eu-south-2
+
+      - name: Download task
+        shell: bash
+        run: |
+          taskDefinition=backend-prod-prod
+          aws ecs describe-task-definition --task-definition $taskDefinition --query taskDefinition > task-definition.json
+      
+      - name: Render task definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        id: render-task-definition
+        with:
+          task-definition: task-definition.json
+          container-name: backend
+          image: ${{ needs.build_and_push.outputs.image_uri }}
+      
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          service: backend-prod
+          cluster: prod
+          force-new-deployment: true
+          wait-for-service-stability: true
+          wait-for-minutes: 600

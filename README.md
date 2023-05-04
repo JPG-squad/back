@@ -15,7 +15,6 @@
 - [Local development](#local-development)
   - [Managing databases](#managing-databases)
   - [Debugging](#debugging)
-  - [Tests](#tests)
 - [Deployment](#deployment)
   - [On push main publish a new version](#on-push-main-publish-a-new-version)
 
@@ -90,9 +89,6 @@ Once the service has started, open the debug view on vscode:
 <b>command + alt + D</b>
 
 Then we can attach to data-service configuration to debug the service in general, you can put a breakpoint inside any file of the `src` directory and the application will stop once it reaches the point.
-
-### Tests
-STILL TO DO
 
 ## Deployment
 
