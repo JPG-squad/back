@@ -30,6 +30,12 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PATH="/srv/venv/bin:$PATH"
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 WORKDIR /app
 COPY app/ .
 EXPOSE 80
+
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD ["prod"]

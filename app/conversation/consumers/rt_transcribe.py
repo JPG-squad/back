@@ -5,14 +5,14 @@ from typing import Dict
 from channels.generic.websocket import AsyncWebsocketConsumer
 from deepgram import Deepgram
 
-from app.settings import LOGGER_NAME
+from app.settings import DEEPGRAM_API_KEY, LOGGER_NAME
 
 
 logger = logging.getLogger(LOGGER_NAME)
 
 
 class TranscribeConsumer(AsyncWebsocketConsumer):
-    dg_client = Deepgram(os.getenv('DEEPGRAM_API_KEY'))
+    dg_client = Deepgram(DEEPGRAM_API_KEY)
 
     async def get_transcript(self, data: Dict) -> None:
         if 'channel' in data:
