@@ -9,7 +9,7 @@ jobs:
   ################################## BUILD AND PUSH ##################################
   build_and_push:
     name:  Build & Push
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     outputs:
       image_uri: ${{ steps.gha_build_and_push.outputs.image_uri }}
       tag: ${{ steps.gha_build_and_push.outputs.tag }}
