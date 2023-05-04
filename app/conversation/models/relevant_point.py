@@ -4,8 +4,13 @@ from django.db import models
 
 
 class Category(Enum):
-    PERSONAL = 'personal'
-    SALUD = 'salud'
+    PERSONAL = 'Personal'
+    ECONOMICO = 'Económico'
+    LABORAL = 'Laboral'
+    FAMILIAR = 'Familiar'
+    AMBIENTAL_VIVIENDA = 'Ambiental y de Vivienda'
+    SALUD = 'de la Salud'
+    SOCIAL = 'Social'
 
 
 class RelevantPointModel(models.Model):
