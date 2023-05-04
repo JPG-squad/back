@@ -6,13 +6,20 @@ PGPASSWORD=changeme
 PGUSER=devuser
 
 # Used for Django container
+APP_ENV=dev
+
+# Database
 DB_HOST=db
 DB_NAME=devdb
 DB_USER=devuser
-DB_PASS=changeme
 
-BUCKET_NAME="jpg-backend-dev"
-OPENAI_API_KEY=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
-
-DEEPGRAM_API_KEY=97bee8db226ba0ec64ed0fa81bc5b8bb6318d7f0
+# Opensearch
 OPENSEARCH_HOST=http://jpg-opensearch-node:9200
+
+# CORS
+CORS_ALLOWED_ORIGIN=http://localhost:3000
+
+# S3
+BUCKET_NAME="jpg-backend-dev"
+
+

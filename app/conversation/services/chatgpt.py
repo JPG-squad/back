@@ -1,9 +1,12 @@
 import logging
 
+import openai
 from openai import Completion
 
-from app.settings import LOGGER_NAME
+from app.settings import LOGGER_NAME, OPENAI_API_KEY
 
+
+openai.api_key = OPENAI_API_KEY
 
 logger = logging.getLogger(LOGGER_NAME)
 

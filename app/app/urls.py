@@ -19,6 +19,14 @@ from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
+from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
+
+
+class HealthView(GenericAPIView):
+    def get(self, request):
+        return Response(status=status.HTTP_200_OK, data={})
 
 
 urlpatterns = [
@@ -27,4 +35,5 @@ urlpatterns = [
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),
     path("api/user/", include("user.urls")),
     path("api/", include("conversation.urls")),
+    path("health/", HealthView.as_view(), name="health"),
 ]

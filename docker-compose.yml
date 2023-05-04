@@ -17,10 +17,7 @@ services:
       - 8777:80
     depends_on:
       - db
-    command: >
-      bash -c "python manage.py wait_for_db &&
-               python manage.py migrate &&
-               python manage.py runserver 0.0.0.0:80"
+    command: "dev"
     networks:
       - jpg-network
 
