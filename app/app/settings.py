@@ -28,6 +28,8 @@ SECRET_KEY = "django-insecure-lk(f&($mlvzj5+qro+1!zsxot#_m=5z)0jaenoy=r2&sy@@p)t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+APP_ENV = "dev"
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
