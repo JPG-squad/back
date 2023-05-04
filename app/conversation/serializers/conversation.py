@@ -49,6 +49,30 @@ class ConversationDetailSerializer(serializers.ModelSerializer):
         return representation
 
 
+class ConversationUploadDraftSerializer(serializers.ModelSerializer):
+    draft = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = ConversationModel
+        fields = [
+            "id",
+            "created_at",
+            "draft",
+            "updated_at",
+            "title",
+            "description",
+            "status",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "title",
+            "description",
+            "status",
+        ]
+
+
 class ConversationUploadSerializer(serializers.Serializer):
     conversation_file = serializers.FileField(write_only=True)
 

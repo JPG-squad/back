@@ -17,7 +17,10 @@ class ConversationModel(models.Model):
     wav_file_s3_path = models.CharField(max_length=255, null=False, blank=False)
     transcribed_file_s3_path = models.CharField(max_length=255, null=False, blank=False)
     status = models.CharField(
-        max_length=20, choices=[(status.name, status.value) for status in Status], default=Status.DRAFT.value
+        max_length=20,
+        choices=[(status.name, status.value) for status in Status],
+        null=False,
+        default=Status.DRAFT.value,
     )
     draft = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

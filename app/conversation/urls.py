@@ -7,6 +7,7 @@ from conversation.views import (
     AnswerView,
     ConversationDetailView,
     ConversationDownloadView,
+    ConversationUploadDraftView,
     ConversationUploadView,
     ConversationView,
     EphemeralAnswerView,
@@ -33,6 +34,11 @@ urlpatterns = [
         "patient/<int:patient_id>/conversation/<int:conversation_id>/",
         ConversationDetailView.as_view(),
         name="patient-conversation-detail",
+    ),
+    path(
+        "patient/<int:patient_id>/conversation/upload-draft/",
+        ConversationUploadDraftView.as_view(),
+        name="patient-conversation-upload-draft",
     ),
     path(
         "patient/<int:patient_id>/conversation/upload/",

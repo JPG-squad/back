@@ -10,11 +10,12 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from app.settings import LOGGER_NAME
-from conversation.models import ConversationModel, PatientModel
+from conversation.models import ConversationModel, PatientModel, Status
 from conversation.serializers import (
     ConversationDetailSerializer,
     ConversationDownloadSerializer,
     ConversationSerializer,
+    ConversationUploadDraftSerializer,
     ConversationUploadSerializer,
 )
 from conversation.services import ChatGPTService, WhisperService
@@ -49,6 +50,27 @@ class ConversationDetailView(GenericAPIView):
             return Response(status=status.HTTP_200_OK, data=serializer.data)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class ConversationUploadDraftView(GenericAPIView):
+    serializer_class = ConversationUploadDraftSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, patient_id):
+        draft = request.data.get("draft")
+        draft_question = "Q: Mejorame la sintaxis i formato de este texto, que quede bien escrito. A:"
+        draft_improved = ChatGPTService.ask(str(draft), draft_question)
+        title_question = "Q: Crea un titulo para esta conversacion de maximo 7 palabras. A:"
+        title = ChatGPTService.ask(str(draft_improved), title_question)
+        description_question = "Crea un resumen de esta conversacion de maximo 30 palabras."
+        description = ChatGPTService.ask(str(draft_improved), description_question)
+        new_conversation = ConversationModel(
+            patient_id=patient_id, draft=draft_improved, title=title, description=description, status=Status.DRAFT.value
+        )
+        new_conversation.save()
+        serializer = ConversationUploadDraftSerializer(new_conversation)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 
 class ConversationUploadView(GenericAPIView):
