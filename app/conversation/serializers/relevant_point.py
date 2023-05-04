@@ -12,9 +12,9 @@ class RelevantPointSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
-class RelevantPointAnswerSerializer(serializers.Serializer):
+class RelevantPointChecklistSerializer(serializers.Serializer):
     """
-    Serializer for the endpoint that receives a context and returns the answers
+    Serializer for the endpoint that receives a context and returns the checklist
     to the relevant points of a patient.
     """
 

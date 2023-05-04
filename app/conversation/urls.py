@@ -13,7 +13,7 @@ from conversation.views import (
     EphemeralAnswerView,
     PatientDetailView,
     PatientView,
-    RelevantPointAnswerView,
+    RelevantPointChecklistView,
     RelevantPointDetailView,
     RelevantPointView,
 )
@@ -56,9 +56,9 @@ urlpatterns = [
         name="patient-conversation-answer",
     ),
     path(
-        "patient/<int:patient_id>/relevant-point/answer/",
-        RelevantPointAnswerView.as_view(),
-        name="patient-relevant-point-answer",
+        "patient/<int:patient_id>/relevant-point/checklist/",
+        RelevantPointChecklistView.as_view(),
+        name="patient-relevant-point-checklist",
     ),
     path("relevant-point/", RelevantPointView.as_view(), name="relevant-point"),
     path("relevant-point/<int:relevant_point_id>", RelevantPointDetailView.as_view(), name="relevant-point-detail"),

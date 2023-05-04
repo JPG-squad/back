@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from app.settings import LOGGER_NAME
 from conversation.models import AnswerModel, RelevantPointModel
-from conversation.serializers import RelevantPointAnswerSerializer, RelevantPointSerializer
+from conversation.serializers import RelevantPointChecklistSerializer, RelevantPointSerializer
 from conversation.services import ChatGPTService
 
 
@@ -65,13 +65,13 @@ class RelevantPointDetailView(GenericAPIView):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-class RelevantPointAnswerView(GenericAPIView):
+class RelevantPointChecklistView(GenericAPIView):
     """
-    View for the endpoint that receives a context and returns the answers
+    View for the endpoint that receives a context and returns the checklist
     to the relevant points of a patient.
     """
 
-    serializer_class = RelevantPointAnswerSerializer
+    serializer_class = RelevantPointChecklistSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     # pre_context_prompt = """
