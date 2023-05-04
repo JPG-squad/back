@@ -101,20 +101,25 @@ class RelevantPointAnswerView(GenericAPIView):
             question = rp.text
             current_anwer_object = AnswerModel.objects.filter(patient_id=patient_id, relevant_point_id=rp.id).first()
             if not current_anwer_object:
-                answer = "0"
-                new_answer_object = AnswerModel(patient_id=patient_id, relevant_point_id=rp.id, text=answer)
-                new_answer_object.save()
-            else:
-                rt_context = request.data.get("context")
-                if rt_context == "":
-                    answer = current_anwer_object.text
-                else:
-                    context = self.pre_context_prompt + " " + rt_context + " \\Queremos saber si se ha hablado de: "
-                    question_to_chat = question + '. Contesta solo con 1 o 0'
-                    answer = ChatGPTService.ask(context, question_to_chat)
-                    if answer != "0":
-                        current_anwer_object.text = answer
-                        current_anwer_object.save()
-            all_answers.append({"question": question, "answer": answer})
+                current_anwer_object = AnswerModel(patient_id=patient_id, relevant_point_id=rp.id, resolved=False)
+                current_anwer_object.save()
+            rt_context = request.data.get("context")
 
-        return Response(status=status.HTTP_200_OK, data=all_answers)
+            if (not current_anwer_object.resolved) and (rt_context != ""):
+                context = self.pre_context_prompt + " " + rt_context + " \\Queremos saber si se ha hablado de: "
+                question_to_chat = question + '. Contesta solo con 1 o 0'
+                answer = ChatGPTService.ask(context, question_to_chat)
+                if "1" in answer:
+                    current_anwer_object.resolved = True
+                    current_anwer_object.save()
+            all_answers.append(
+                {"question": question, "resolved": current_anwer_object.resolved, "category": rp.category}
+            )
+        answers_groupd_by_category = {}
+        for answer in all_answers:
+            category = answer["category"]
+            if category not in answers_groupd_by_category:
+                answers_groupd_by_category[category] = []
+            answers_groupd_by_category[category].append(answer)
+
+        return Response(status=status.HTTP_200_OK, data=answers_groupd_by_category)
