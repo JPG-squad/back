@@ -63,7 +63,7 @@ class ConversationUploadDraftView(GenericAPIView):
         draft_improved = ChatGPTService.ask(str(draft), draft_question)
         title_question = "Q: Crea un titulo para esta conversacion de maximo 7 palabras. A:"
         title = ChatGPTService.ask(str(draft_improved), title_question)
-        description_question = "Crea un resumen de esta conversacion de maximo 30 palabras."
+        description_question = "Q: Crea un resumen de esta conversacion de maximo 30 palabras. A:"
         description = ChatGPTService.ask(str(draft_improved), description_question)
         new_conversation = ConversationModel(
             patient_id=patient_id, draft=draft_improved, title=title, description=description, status=Status.DRAFT.value
@@ -95,9 +95,8 @@ class ConversationUploadView(GenericAPIView):
 
             file_name = f"{patient_id}_{request.user.id}_{now_str}_{file.name}"
 
-            # if engine == aws use AWS service otherwise use the other service
-            # transcribe_service = AWSTranscribeService(bucket_name, file)
             transcribe_service = WhisperService(bucket_name, file, file_name)
+
             if execute_transcribe:
                 error = transcribe_service.transcribe()
                 logger.error(error)
@@ -111,11 +110,9 @@ class ConversationUploadView(GenericAPIView):
                 transcription = transcribe_service.update_speaker_names(transcription, employee_name, patient_name)
                 logger.info("Transcription with speaker names: %s", transcription)
 
-                # Pillar chat i automeoplenar els answers
-
-                title_question = "Crea un titulo para esta conversacion de maximo 7 palabras."
+                title_question = "Q: Crea un titulo para esta conversacion de maximo 7 palabras. A:"
                 title = ChatGPTService.ask(str(transcription), title_question)
-                description_question = "Crea un resumen de esta conversacion de maximo 30 palabras."
+                description_question = "Q: Crea un resumen de esta conversacion de maximo 30 palabras. A:"
                 description = ChatGPTService.ask(str(transcription), description_question)
 
                 ConversationModel.objects.create(
