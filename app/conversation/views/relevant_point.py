@@ -4,6 +4,7 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from app.conversation.models import answer
 from app.settings import LOGGER_NAME
 from conversation.models import AnswerModel, RelevantPointModel
 from conversation.serializers import RelevantPointChecklistSerializer, RelevantPointSerializer
@@ -74,41 +75,10 @@ class RelevantPointChecklistView(GenericAPIView):
     serializer_class = RelevantPointChecklistSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    pre_context_prompt = """
-        Te voy a mandar un trozo de una conversacion a un usuario que ha venido a buscar ayuda en la Cruz Roja.
-        También te mandaré una pregunta o un campo el cual quiero que me digas si con el trozo de la conversación
-        que te he mandado se ha contestado. Solo quiero que me contestes con '1' (si es que si) o '0' (Si es que no).
-        La conversacion ha sido la siguiente: \n
-    """
 
     def post(self, request, patient_id):
         """Get the answers to the relevant points of a patient."""
-        rps = RelevantPointModel.objects.all()
-
-        all_answers = []
-        for rp in rps:
-            question = rp.text
-            current_anwer_object = AnswerModel.objects.filter(patient_id=patient_id, relevant_point_id=rp.id).first()
-            if not current_anwer_object:
-                current_anwer_object = AnswerModel(patient_id=patient_id, relevant_point_id=rp.id, resolved=False)
-                current_anwer_object.save()
-            rt_context = request.data.get("context")
-
-            if (not current_anwer_object.resolved) and (rt_context != ""):
-                context = self.pre_context_prompt + rt_context + "\n\nQueremos saber si se ha hablado de: "
-                question_to_chat = question + '. Contesta solo con 1 o 0'
-                answer = ChatGPTService.ask(context, question_to_chat)
-                if "1" in answer:
-                    current_anwer_object.resolved = True
-                    current_anwer_object.save()
-            all_answers.append(
-                {"question": question, "resolved": current_anwer_object.resolved, "category": rp.category}
-            )
-        answers_groupd_by_category = {}
-        for answer in all_answers:
-            category = answer["category"]
-            if category not in answers_groupd_by_category:
-                answers_groupd_by_category[category] = []
-            answers_groupd_by_category[category].append(answer)
-
+        answers_groupd_by_category = ChatGPTService.ask_for_relevant_points_checklist(
+            request.data.get("context"), patient_id
+        )
         return Response(status=status.HTTP_200_OK, data=answers_groupd_by_category)

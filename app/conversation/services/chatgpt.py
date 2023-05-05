@@ -33,9 +33,45 @@ class ChatGPTService:
         return answer
 
     @staticmethod
-    def ask_for_relevant_points(input_context, patient_id):
+    def ask_for_relevant_points_checklist(input_context, patient_id):
         pre_context_prompt = """
-            Eres un trabajador que tiene que rellenar un formulario con una serie de preguntas.
+            Te voy a mandar un trozo de una conversacion a un usuario que ha venido a buscar ayuda en la Cruz Roja.
+            También te mandaré una pregunta o un campo el cual quiero que me digas si con el trozo de la conversación
+            que te he mandado se ha contestado. Solo quiero que me contestes con '1' (si es que si) o '0' (Si es que no)
+            La conversacion ha sido la siguiente: \n
+        """
+        all_answers = []
+        rps = RelevantPointModel.objects.all()
+        for rp in rps:
+            question = rp.text
+            current_anwer_object = AnswerModel.objects.filter(patient_id=patient_id, relevant_point_id=rp.id).first()
+            if not current_anwer_object:
+                current_anwer_object = AnswerModel(patient_id=patient_id, relevant_point_id=rp.id, resolved=False)
+                current_anwer_object.save()
+            rt_context = input_context
+
+            if (not current_anwer_object.resolved) and (rt_context != ""):
+                context = pre_context_prompt + rt_context + "\n\nQueremos saber si se ha hablado de: "
+                question_to_chat = question + ' Contesta solo con 1 o 0'
+                answer = ChatGPTService.ask(context, question_to_chat)
+                if "1" in answer:
+                    current_anwer_object.resolved = True
+                    current_anwer_object.save()
+            all_answers.append(
+                {"question": question, "resolved": current_anwer_object.resolved, "category": rp.category}
+            )
+        answers_groupd_by_category = {}
+        for answer in all_answers:
+            category = answer["category"]
+            if category not in answers_groupd_by_category:
+                answers_groupd_by_category[category] = []
+            answers_groupd_by_category[category].append(answer)
+        return answers_groupd_by_category
+
+    @staticmethod
+    def ask_for_relevant_points_answers(input_context, patient_id):
+        pre_context_prompt = """
+            Eres un trabajador de la Cruz Roja que tiene que rellenar un formulario con una serie de preguntas.
             Estas entrevistando a un usuario en una primera toma de contacto. Tu serás el que hace
             las preguntas en el contexto, y el usuario será el que las responda.
             Te voy a proporcionar el contexto y una pregunta o campo que debes rellenar.
@@ -51,7 +87,7 @@ class ChatGPTService:
             question = rp.text
             current_anwer_object = AnswerModel.objects.filter(patient_id=patient_id, relevant_point_id=rp.id).first()
             if current_anwer_object.resolved:
-                question_to_chat = question + '\nContesta solo con informacion que se te pide.'
+                question_to_chat = question + '\nContesta solo con la informacion que se te pide.'
                 answer = ChatGPTService.ask(context, question_to_chat)
                 current_anwer_object.text = answer
                 current_anwer_object.save()

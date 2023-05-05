@@ -127,6 +127,8 @@ class ConversationUploadView(GenericAPIView):
                     conversation=json.dumps(transcription),
                     duration=duration,
                 )
+                ChatGPTService.ask_for_relevant_points_checklist(transcription, patient_id)
+                ChatGPTService.ask_for_relevant_points_answers(transcription, patient_id)
 
                 # We update the user updated_at attribute so it goes to the top of the list when sorted in the frontend
                 patient = PatientModel.objects.get(id=patient_id)
