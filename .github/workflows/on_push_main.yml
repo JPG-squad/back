@@ -11,8 +11,8 @@ jobs:
     name:  Build & Push
     runs-on: ubuntu-22.04
     outputs:
-      image_uri: ${{ steps.gha_build_and_push.outputs.image_uri }}
-      tag: ${{ steps.gha_build_and_push.outputs.tag }}
+      image_uri: ${{ steps.prep.outputs.image_uri }}
+      tag: ${{ steps.prep.outputs.tag }}
 
     steps:
 
@@ -95,7 +95,7 @@ jobs:
           TAGS="$TAGS, ${ECR_REGISTRY}/backend:latest"
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "tagged_image=${ECR_REGISTRY}/backend:${TAG}" >> $GITHUB_OUTPUT
+          echo "image_uri=${ECR_REGISTRY}/backend:${TAG}" >> $GITHUB_OUTPUT
 
       - name: Build and push image
         uses: docker/build-push-action@v4.0.0
