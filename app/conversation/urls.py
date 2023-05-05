@@ -16,6 +16,7 @@ from conversation.views import (
     RelevantPointChecklistView,
     RelevantPointDetailView,
     RelevantPointView,
+    SearchView,
 )
 
 
@@ -62,4 +63,5 @@ urlpatterns = [
     ),
     path("relevant-point/", RelevantPointView.as_view(), name="relevant-point"),
     path("relevant-point/<int:relevant_point_id>", RelevantPointDetailView.as_view(), name="relevant-point-detail"),
+    path("search/", SearchView.as_view(), name="search"),
 ]

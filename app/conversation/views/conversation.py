@@ -19,6 +19,7 @@ from conversation.serializers import (
     ConversationUploadSerializer,
 )
 from conversation.services import ChatGPTService, WhisperService
+from conversation.services.opensearch import open_search_service
 
 
 bucket_name = environ.get("BUCKET_NAME")
@@ -69,6 +70,7 @@ class ConversationUploadDraftView(GenericAPIView):
             patient_id=patient_id, draft=draft_improved, title=title, description=description, status=Status.DRAFT.value
         )
         new_conversation.save()
+        open_search_service.index_conversation(new_conversation)
         ChatGPTService.ask_for_relevant_points_answers(draft_improved, patient_id)
         serializer = ConversationUploadDraftSerializer(new_conversation)
         return Response(status=status.HTTP_200_OK, data=serializer.data)

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
-from app.opensearch import open_search
 from conversation.models import ConversationModel
+from conversation.services.opensearch import open_search_service
 
 
 class Command(BaseCommand):
@@ -22,7 +22,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         object = options["object"]
-
         if not object:
             msg = "Param --object is required"
             self.stdout.write(self.style.ERROR(msg))
@@ -34,26 +33,7 @@ class Command(BaseCommand):
             conversations = list(ConversationModel.objects.all())
 
             for c in conversations:
-                c_to_index = {
-                    "object_type": "conversation",
-                    "id": c.id,
-                    "title": c.title,
-                    "description": c.description,
-                    "patient_id": c.patient.id,
-                    "status": c.status,
-                    "draft": c.draft,
-                    "created_at": c.created_at,
-                    "updated_at": c.updated_at,
-                    "conversation": c.conversation,
-                    "duration": c.duration,
-                }
-                try:
-                    open_search.index(
-                        index="jpg.object", id=f"{c_to_index['object_type']}-{c_to_index['id']}", body=c_to_index
-                    )
-                    self.stdout.write(self.style.SUCCESS(f"Indexed conversation {c_to_index['id']}"))
-                except Exception:
-                    self.stdout.write(self.style.ERROR(f"Error indexing conversation {c_to_index['id']}"))
+                open_search_service.index_conversation(c)
 
             msg = f'{len(conversations)} Conversations indexed to opensearch correctly!'
             self.stdout.write(self.style.SUCCESS(msg))

@@ -60,6 +60,10 @@ You can now execute service endpoints using Swagger UI: open http://localhost:87
 
 Django admin is also available: open http://localhost:8777/admin
 
+Index conversations command:
+```bash
+docker-compose exec back python manage.py index --object Conversation
+```
 
 ## Local development
 
