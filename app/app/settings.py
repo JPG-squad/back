@@ -41,6 +41,7 @@ DEBUG = os.environ.get("DEBUG")
 APP_ENV = "dev"
 
 CORS_ALLOWED_ORIGINS = list(filter(None, os.getenv('CORS_ORIGIN_WHITELIST').split(',')))
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 ALLOWED_HOSTS = ["*"]
 
