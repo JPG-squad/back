@@ -21,7 +21,7 @@ class SecretsManager:
 
     def try_get_secret(self, name, key):
         try:
-            logger.info("Getting secret from Secrets Manager", name, key)
+            print("Getting secret from Secrets Manager", name, key)
             return self.get_secret(name, key)
         except Exception:
             logger.error("Failed to get secret", exc_info=True)
