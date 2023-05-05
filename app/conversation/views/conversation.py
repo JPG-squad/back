@@ -69,7 +69,7 @@ class ConversationUploadDraftView(GenericAPIView):
             patient_id=patient_id, draft=draft_improved, title=title, description=description, status=Status.DRAFT.value
         )
         new_conversation.save()
-        ChatGPTService.ask_for_relevant_points(draft_improved, patient_id)
+        ChatGPTService.ask_for_relevant_points_answers(draft_improved, patient_id)
         serializer = ConversationUploadDraftSerializer(new_conversation)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
