@@ -46,8 +46,6 @@ jobs:
     
       - name: Create new release tag 
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "4) Forcing tag update..."
           git tag -a ${{ steps.get_next_tag.outputs.next_tag }} -m "${INPUT_MESSAGE}" "${GITHUB_SHA}" -f
