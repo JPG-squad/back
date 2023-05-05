@@ -40,9 +40,8 @@ DEBUG = os.environ.get("DEBUG")
 
 APP_ENV = "dev"
 
-CORS_ALLOWED_ORIGINS = [
-    os.environ.get("CORS_ALLOWED_ORIGIN"),
-]
+CORS_ALLOWED_ORIGINS = list(filter(None, os.getenv('CORS_ORIGIN_WHITELIST').split(',')))
+
 ALLOWED_HOSTS = ["*"]
 
 
