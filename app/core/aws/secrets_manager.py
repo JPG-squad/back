@@ -12,7 +12,6 @@ class SecretsManager:
 
     def __init__(self) -> None:
         self.secretsmanager_client = boto3.client("secretsmanager")
-        # print("region", self.secretsmanager_client.meta.region_name)
 
     def get_secret(self, name, key):
         kwargs = {"SecretId": name}
@@ -24,5 +23,5 @@ class SecretsManager:
             print("Getting secret from Secrets Manager", name, key)
             return self.get_secret(name, key)
         except Exception:
-            logger.error("Failed to get secret", exc_info=True)
+            print("Failed to get secret from Secrets Manager")
             return None
