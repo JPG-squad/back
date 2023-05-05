@@ -74,22 +74,11 @@ class RelevantPointChecklistView(GenericAPIView):
     serializer_class = RelevantPointChecklistSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    # pre_context_prompt = """
-    #     Eres un trabajador que tiene que rellenar un formulario con una serie de preguntas.
-    #     Estas entrevistando a un usuario en una primera toma de contacto. Tu serás el que hace
-    #     las preguntas en el contexto, y el usuario será el que las responda.
-    #     Te voy a proporcionar el contexto y una pregunta o campo que debes rellenar.
-    #     Solo debes responder con informacion del usuario.
-    #     Si no sabes responder a esa pregunta/campo, contesta solamente con un '0'.
-    #     Si sabes la respuesta a la pregunta o al campo que debes rellenar,
-    #     no vuelvas a escribir la pregunta o el nombre del campo, simplemente contesta con el valor. \n
-    #     Contexto:
-    # """
     pre_context_prompt = """
         Te voy a mandar un trozo de una conversacion a un usuario que ha venido a buscar ayuda en la Cruz Roja.
         También te mandaré una pregunta o un campo el cual quiero que me digas si con el trozo de la conversación
         que te he mandado se ha contestado. Solo quiero que me contestes con '1' (si es que si) o '0' (Si es que no).
-        La conversacion ha sido la siguiente.
+        La conversacion ha sido la siguiente: \n
     """
 
     def post(self, request, patient_id):
@@ -106,7 +95,7 @@ class RelevantPointChecklistView(GenericAPIView):
             rt_context = request.data.get("context")
 
             if (not current_anwer_object.resolved) and (rt_context != ""):
-                context = self.pre_context_prompt + " " + rt_context + " \\Queremos saber si se ha hablado de: "
+                context = self.pre_context_prompt + rt_context + "\n\nQueremos saber si se ha hablado de: "
                 question_to_chat = question + '. Contesta solo con 1 o 0'
                 answer = ChatGPTService.ask(context, question_to_chat)
                 if "1" in answer:
