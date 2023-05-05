@@ -4,9 +4,8 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from app.conversation.models import answer
 from app.settings import LOGGER_NAME
-from conversation.models import AnswerModel, RelevantPointModel
+from conversation.models import RelevantPointModel
 from conversation.serializers import RelevantPointChecklistSerializer, RelevantPointSerializer
 from conversation.services import ChatGPTService
 

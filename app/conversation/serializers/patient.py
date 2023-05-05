@@ -10,3 +10,11 @@ class PatientSerializer(serializers.ModelSerializer):
         model = PatientModel
         fields = ["id", "email", "name", "phone_number", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class PatientSheetSerializer(serializers.Serializer):
+    """
+    Serializer that returns all the answers of the relevant points of a patient.
+    """
+
+    context = serializers.CharField(required=True)
