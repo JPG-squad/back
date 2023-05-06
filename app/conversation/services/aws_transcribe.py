@@ -67,15 +67,11 @@ class AWSTranscribeService:
             la respuesta que da otro aveces salen en el mismo elemento.Tu objetivo principal es arreglar
             el output de AWS transcribe.Devuelveme un JSON valido en formato UTF8:\n'''
         conversation_json = json.loads(ChatGPTService.ask(str(transcription), question).replace("'", '"'))
-        logger.info("Conversation json improved: %s", conversation_json)
 
         question = '''En la siguiente conversacion hay errores donde uno pregunta y la respuesta del otro
         esta en el mismo elemento del json y deberia estar en el siguiente elemento como respuesta, arreglalo.
         Devuelveme un JSON valido en formato UTF8:\n'''
-        logger.info("Conversation json: %s", conversation_json)
         conversation_json = json.loads(ChatGPTService.ask(str(conversation_json), question).replace("'", '"'))
-        logger.info("Conversation json improved: %s", conversation_json)
-
         return conversation_json
 
     def _start_job(self, job_name, media_format, language_code):
