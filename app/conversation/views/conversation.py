@@ -19,7 +19,7 @@ from conversation.serializers import (
     ConversationUploadDraftSerializer,
     ConversationUploadSerializer,
 )
-from conversation.services import ChatGPTService, DeepgramService
+from conversation.services import AWSTranscribeService, ChatGPTService, DeepgramService
 from conversation.services.opensearch import open_search_service
 
 
@@ -86,6 +86,7 @@ class ConversationUploadView(GenericAPIView):
 
     def post(self, request, patient_id):
         execute_transcribe = True
+        transcribe_engine = "aws_transcribe"
 
         serializer = ConversationUploadSerializer(data=request.data)
         patient = PatientModel.objects.get(id=patient_id)
@@ -100,7 +101,10 @@ class ConversationUploadView(GenericAPIView):
             patient_name = patient.name
             employee_name = request.user.name
 
-            transcribe_service = DeepgramService(bucket_name, file, file_name, employee_name, patient_name)
+            if transcribe_engine == "aws_transcribe":
+                transcribe_service = AWSTranscribeService(bucket_name, file, file_name, employee_name, patient_name)
+            elif transcribe_engine == "deepgram":
+                transcribe_service = DeepgramService(bucket_name, file, file_name, employee_name, patient_name)
 
             if execute_transcribe:
                 transcription = transcribe_service.transcribe()

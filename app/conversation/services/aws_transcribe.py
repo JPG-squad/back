@@ -12,19 +12,15 @@ logger = logging.getLogger(LOGGER_NAME)
 
 
 class AWSTranscribeService:
-    def __init__(self, bucket_name, file, file_name):
+    def __init__(self, bucket_name, file, file_name, employee_name, patient_name):
         self.transcribe_client = boto3.client("transcribe", region_name="eu-west-1")
         self.s3 = boto3.client("s3", region_name="eu-west-1")
         self.bucket_name = bucket_name
         self.file_name = file_name
         logger.info("Uploading file %s to bucket %s", self.file_name, self.bucket_name)
         self.s3.upload_fileobj(file, self.bucket_name, self.file_name)
-
-    def get_transcription(self):
-        response = self.s3.get_object(Bucket=self.bucket_name, Key=self.file_name.replace(".wav", ".json"))
-        transcription_json = json.loads(response["Body"].read().decode("utf-8"))
-        parsed_conversation_json = self._parse_transcribe_conversation(transcription_json)
-        return self._improve_transcription(parsed_conversation_json)
+        self.employee_name = employee_name
+        self.patient_name = patient_name
 
     def get_duration(self):
         response = self.s3.get_object(Bucket=self.bucket_name, Key=self.file_name.replace(".wav", ".json"))
@@ -33,7 +29,6 @@ class AWSTranscribeService:
 
     def transcribe(self):
         job_name = "transcribe-job-" + self.file_name
-        error = False
         self._start_job(
             job_name=job_name,
             media_format="wav",
@@ -52,10 +47,14 @@ class AWSTranscribeService:
         if job_status == "COMPLETED":
             logger.debug("Transcription job has ended")
         else:
-            error = True
             logger.error("Transcription job failed with status: %s", job_status)
-        self.transcribe_client.delete_transcription_job(TranscriptionJobName=job_name)
-        return error
+        # self.transcribe_client.delete_transcription_job(TranscriptionJobName=job_name)
+        response = self.s3.get_object(Bucket=self.bucket_name, Key=self.file_name.replace(".wav", ".json"))
+        transcription_json = json.loads(response["Body"].read().decode("utf-8"))
+        parsed_conversation_json = self._parse_transcribe_conversation(transcription_json)
+        improved_transcript = self._improve_transcription(parsed_conversation_json)
+        transcription_with_speakers = self.update_speaker_names(improved_transcript)
+        return transcription_with_speakers
 
     def _improve_transcription(self, transcription):
         question = '''Aqui tienes una respuesta en JSON de AWS transcribe, corrige el JSON y mejora la
@@ -97,12 +96,7 @@ class AWSTranscribeService:
             return job
 
     def _parse_transcribe_conversation(self, transcription):
-        parsed_conversation = {"conversation": [], "speakers": []}
-        speaker_set = set()
-        for speaker in transcription["results"]["speaker_labels"]["segments"]:
-            speaker_set.add(speaker["speaker_label"])
-        parsed_conversation["speakers"] = list(speaker_set)
-
+        parsed_conversation = {"conversation": []}
         speaker = None
         text = ""
         for item in transcription["results"]["items"]:
@@ -117,21 +111,10 @@ class AWSTranscribeService:
         parsed_conversation["conversation"].append({'speaker': speaker, 'text': text})
         return parsed_conversation
 
-    def update_speaker_names(self, transcription, employee_name, patient_name):
-        question = '''Can you identify which speaker is the employee, it must had said somethink like:
-        "Das tu consentimiento que esta conversacion va ser grabada?"
-        Respond with the speaker identifier only'''
-        employee_speaker_id = ChatGPTService.ask(json.dumps(transcription), question)
-        logger.info("Employee speaker id: %s", employee_speaker_id)
-
-        for i, speaker in enumerate(transcription["speakers"]):
-            if speaker == employee_speaker_id:
-                transcription["speakers"][i] = employee_name
-            else:
-                transcription["speakers"][i] = patient_name
+    def update_speaker_names(self, transcription):
         for i, item in enumerate(transcription["conversation"]):
-            if item["speaker"] == employee_speaker_id:
-                transcription["conversation"][i]["speaker"] = employee_name
+            if item["speaker"] == "spk_0":
+                transcription["conversation"][i]["speaker"] = self.employee_name
             else:
-                transcription["conversation"][i]["speaker"] = patient_name
+                transcription["conversation"][i]["speaker"] = self.patient_name
         return transcription
