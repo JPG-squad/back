@@ -38,7 +38,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG")
 
-APP_ENV = "dev"
+APP_ENV = os.environ.get("APP_ENV")
 
 CORS_ALLOWED_ORIGINS = list(filter(None, os.getenv('CORS_ORIGIN_WHITELIST').split(',')))
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
