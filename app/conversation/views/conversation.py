@@ -86,7 +86,7 @@ class ConversationUploadView(GenericAPIView):
 
     def post(self, request, patient_id):
         execute_transcribe = True
-        transcribe_engine = "aws_transcribe"
+        transcribe_engine = request.GET.get('engine', 'aws_transcribe')
 
         serializer = ConversationUploadSerializer(data=request.data)
         patient = PatientModel.objects.get(id=patient_id)
