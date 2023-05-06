@@ -1,6 +1,7 @@
 import io
 import json
 import logging
+import os
 
 from aiohttp import FormData
 import boto3
@@ -14,7 +15,7 @@ logger = logging.getLogger(LOGGER_NAME)
 
 
 class DeepgramService:
-    def __init__(self, bucket_name, file, file_name):
+    def __init__(self, bucket_name, file, file_name, employee_name, patient_name):
         self.dg_client = Deepgram(DEEPGRAM_API_KEY)
         self.file = file
         self.s3 = boto3.client("s3")
@@ -32,6 +33,9 @@ class DeepgramService:
         logger.info("Uploading file %s to bucket %s", self.file_name, self.bucket_name)
         self.s3.upload_fileobj(file, self.bucket_name, self.file_name)
         logger.info("File uploaded successfully")
+        self.duration = 0
+        self.patient_name = patient_name
+        self.employee_name = employee_name
 
     def get_raw_transcription(self):
         self.s3.download_file(self.bucket_name, self.file_name, "recordings/" + self.file_name)
@@ -39,31 +43,53 @@ class DeepgramService:
             source = {"buffer": f, "mimetype": 'audio/wav'}
             logger.info("Sending file to transcribe to Deepgram...")
             response = self.dg_client.transcription.sync_prerecorded(source, self.options)
-            logger.info(response)
             logger.info("Transcription received successfully!")
+            os.remove("recordings/" + self.file_name)
             return response
 
     def get_duration(self):
-        pass
+        return self.duration
 
     def transcribe(self):
-        return self.get_raw_transcription()
-
-    def update_speaker_names(self, transcription, employee_name, patient_name):
-        question = '''Can you identify which speaker is the employee, it must had said somethink like:
-        "Das tu consentimiento que esta conversacion va ser grabada?"
-        Respond with the speaker identifier only'''
-        employee_speaker_id = ChatGPTService.ask(json.dumps(transcription), question)
-        logger.info("Employee speaker id: %s", employee_speaker_id)
-
-        for i, speaker in enumerate(transcription["speakers"]):
-            if speaker == employee_speaker_id:
-                transcription["speakers"][i] = employee_name
+        raw_transcript = self.get_raw_transcription()
+        words = raw_transcript["results"]["channels"][0]["alternatives"][0]["words"]
+        self.duration = words[-1]["end"]
+        current_speaker = 0
+        current_transcript = ""
+        final_transcript = []
+        for word in words:
+            if word["speaker"] != current_speaker:
+                final_transcript.append({"speaker": current_speaker, "text": current_transcript})
+                current_transcript = ""
+                current_speaker = word["speaker"]
+                current_transcript += word["punctuated_word"]
             else:
-                transcription["speakers"][i] = patient_name
+                current_transcript += " " + word["punctuated_word"]
+        final_transcript.append({"speaker": current_speaker, "text": current_transcript})
+        transcript_to_return = {"conversation": final_transcript}
+        improved_transcript = self._improve_transcription(transcript_to_return)
+        transcript_with_speaker_names = self.update_speaker_names(improved_transcript)
+        return transcript_with_speaker_names
+
+    def _improve_transcription(self, transcription):
+        pre_context = '''
+        A continuación te voy a pasar un json que es una conversación transcrita.
+        Como vas a ver, en cada objecto hay un el texto y quien lo ha dicho: \n\n
+        '''
+        question = '''
+        \n
+        En el json anterion, puede ser que haya palabras que se hayan esten mal
+        y que realmente las haya dicho las siguiente persona en hablar.
+        Podrias arrreglarlo? Devuelveme un JSON igual que el que te he pasado yo,
+        valido en formato UTF8:\n
+        '''
+        conversation_json = json.loads(ChatGPTService.ask(pre_context + str(transcription), question).replace("'", '"'))
+        return conversation_json
+
+    def update_speaker_names(self, transcription):
         for i, item in enumerate(transcription["conversation"]):
-            if item["speaker"] == employee_speaker_id:
-                transcription["conversation"][i]["speaker"] = employee_name
+            if item["speaker"] == 0:
+                transcription["conversation"][i]["speaker"] = self.employee_name
             else:
-                transcription["conversation"][i]["speaker"] = patient_name
+                transcription["conversation"][i]["speaker"] = self.patient_name
         return transcription

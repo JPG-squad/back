@@ -24,7 +24,13 @@ class TranscribeConsumer(AsyncWebsocketConsumer):
     async def connect_to_deepgram(self):
         try:
             self.socket = await self.dg_client.transcription.live(
-                {'language': 'es', 'punctuate': True, 'interim_results': False}
+                {
+                    'language': 'es',
+                    'punctuate': True,
+                    'model': 'general-enhanced',
+                    'tier': 'enhanced',
+                    'interim_results': True,
+                }
             )
             self.socket.registerHandler(self.socket.event.CLOSE, lambda c: print(f'Connection closed with code {c}.'))
             self.socket.registerHandler(self.socket.event.TRANSCRIPT_RECEIVED, self.get_transcript)
