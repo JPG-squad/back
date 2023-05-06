@@ -51,7 +51,7 @@ class AWSTranscribeService:
             logger.debug("Transcription job has ended")
         else:
             logger.error("Transcription job failed with status: %s", job_status)
-        # self.transcribe_client.delete_transcription_job(TranscriptionJobName=job_name)
+        self.transcribe_client.delete_transcription_job(TranscriptionJobName=job_name)
         response = self.s3.get_object(
             Bucket=self.bucket_name, Key=self.file_name.replace(f".{self.file_extension}", ".json")
         )
