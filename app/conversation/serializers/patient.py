@@ -17,4 +17,4 @@ class PatientSheetSerializer(serializers.Serializer):
     Serializer that returns all the answers of the relevant points of a patient.
     """
 
-    context = serializers.CharField(required=True)
+    ...

@@ -2,8 +2,8 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from conversation.models import PatientModel
-from conversation.serializers import PatientSerializer
+from conversation.models import AnswerModel, PatientModel
+from conversation.serializers import PatientSerializer, PatientSheetSerializer
 
 
 class PatientView(GenericAPIView):
@@ -56,3 +56,36 @@ class PatientDetailView(GenericAPIView):
             patient_to_update.update(**request.data)
             return Response(status=status.HTTP_200_OK, data={"message": "Patient updated."})
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class PatientSheetView(GenericAPIView):
+    """
+    View that returns all the answers of the relevant points of a patient.
+    """
+
+    serializer_class = PatientSheetSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, patient_id):
+        """Get a specific patient of the authenticated user."""
+        answers = AnswerModel.objects.filter(id=patient_id)
+        all_answers = []
+        for answer in answers:
+            if not answer.resolved:
+                answer_to_return = ""
+            else:
+                answer_to_return = answer.text
+            a = {
+                "question": answer.relevant_point.text,
+                "answer": answer_to_return,
+                "category": answer.relevant_point.category,
+            }
+            all_answers.append(a)
+        answers_groupd_by_category = {}
+        for answer in all_answers:
+            category = answer["category"]
+            if category not in answers_groupd_by_category:
+                answers_groupd_by_category[category] = []
+            answers_groupd_by_category[category].append(answer)
+        return Response(status=status.HTTP_200_OK, data=answers_groupd_by_category)

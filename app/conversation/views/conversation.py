@@ -18,7 +18,7 @@ from conversation.serializers import (
     ConversationUploadDraftSerializer,
     ConversationUploadSerializer,
 )
-from conversation.services import ChatGPTService, WhisperService
+from conversation.services import ChatGPTService, DeepgramService
 from conversation.services.opensearch import open_search_service
 
 
@@ -97,44 +97,41 @@ class ConversationUploadView(GenericAPIView):
 
             file_name = f"{patient_id}_{request.user.id}_{now_str}_{file.name}"
 
-            transcribe_service = WhisperService(bucket_name, file, file_name)
+            transcribe_service = DeepgramService(bucket_name, file, file_name)
 
             if execute_transcribe:
-                error = transcribe_service.transcribe()
-                logger.error(error)
-                if error:
-                    return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                transcribe_service.transcribe()
 
-                transcription = transcribe_service.get_transcription()
-                duration = transcribe_service.get_duration()
-                patient_name = patient.name
-                employee_name = request.user.name
-                transcription = transcribe_service.update_speaker_names(transcription, employee_name, patient_name)
-                logger.info("Transcription with speaker names: %s", transcription)
+                # transcription = transcribe_service.get_transcription()
+                # duration = transcribe_service.get_duration()
+                # patient_name = patient.name
+                # employee_name = request.user.name
+                # transcription = transcribe_service.update_speaker_names(transcription, employee_name, patient_name)
+                # logger.info("Transcription with speaker names: %s", transcription)
 
-                title_question = "Q: Crea un titulo para esta conversacion de maximo 7 palabras. A:"
-                title = ChatGPTService.ask(str(transcription), title_question)
-                description_question = "Q: Crea un resumen de esta conversacion de maximo 30 palabras. A:"
-                description = ChatGPTService.ask(str(transcription), description_question)
+                # title_question = "Q: Crea un titulo para esta conversacion de maximo 7 palabras. A:"
+                # title = ChatGPTService.ask(str(transcription), title_question)
+                # description_question = "Q: Crea un resumen de esta conversacion de maximo 30 palabras. A:"
+                # description = ChatGPTService.ask(str(transcription), description_question)
 
-                ConversationModel.objects.create(
-                    patient=patient,
-                    title=title,
-                    description=description,
-                    wav_file_s3_path=file_name,
-                    transcribed_file_s3_path=file_name.replace(".wav", ".json"),
-                    conversation=json.dumps(transcription),
-                    duration=duration,
-                )
-                ChatGPTService.ask_for_relevant_points_checklist(transcription, patient_id)
-                ChatGPTService.ask_for_relevant_points_answers(transcription, patient_id)
+                # ConversationModel.objects.create(
+                #     patient=patient,
+                #     title=title,
+                #     description=description,
+                #     wav_file_s3_path=file_name,
+                #     transcribed_file_s3_path=file_name.replace(".wav", ".json"),
+                #     conversation=json.dumps(transcription),
+                #     duration=duration,
+                # )
+                # ChatGPTService.ask_for_relevant_points_checklist(transcription, patient_id)
+                # ChatGPTService.ask_for_relevant_points_answers(transcription, patient_id)
 
                 # We update the user updated_at attribute so it goes to the top of the list when sorted in the frontend
-                patient = PatientModel.objects.get(id=patient_id)
-                patient.updated_at = datetime.now()
-                patient.save()
+                # patient = PatientModel.objects.get(id=patient_id)
+                # patient.updated_at = datetime.now()
+                # patient.save()
 
-                return Response(status=status.HTTP_200_OK, data={"title": title, "description": description})
+                return Response(status=status.HTTP_200_OK, data={})
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
