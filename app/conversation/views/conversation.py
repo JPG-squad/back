@@ -145,7 +145,7 @@ class ConversationDownloadView(GenericAPIView):
         )
         if conversation.exists():
             s3_file_path = conversation[0].wav_file_s3_path
-            s3_response = boto3.client("s3").get_object(Bucket=bucket_name, Key=s3_file_path)
+            s3_response = boto3.client("s3", region_name="eu-west-1").get_object(Bucket=bucket_name, Key=s3_file_path)
             content = s3_response['Body'].read()
             response = HttpResponse(status=status.HTTP_200_OK, content=content, content_type=s3_response['ContentType'])
             response['Content-Disposition'] = f'attachment; filename="{s3_file_path}"'

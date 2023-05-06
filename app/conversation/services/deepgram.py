@@ -18,7 +18,7 @@ class DeepgramService:
     def __init__(self, bucket_name, file, file_name, employee_name, patient_name):
         self.dg_client = Deepgram(DEEPGRAM_API_KEY)
         self.file = file
-        self.s3 = boto3.client("s3")
+        self.s3 = boto3.client("s3", region_name="eu-west-1")
         self.options = {
             'punctuate': True,
             'diarize': True,

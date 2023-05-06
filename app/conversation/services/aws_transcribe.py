@@ -14,7 +14,7 @@ logger = logging.getLogger(LOGGER_NAME)
 class AWSTranscribeService:
     def __init__(self, bucket_name, file, file_name):
         self.transcribe_client = boto3.client("transcribe", region_name="eu-west-1")
-        self.s3 = boto3.client("s3")
+        self.s3 = boto3.client("s3", region_name="eu-west-1")
         self.bucket_name = bucket_name
         self.file_name = file_name
         logger.info("Uploading file %s to bucket %s", self.file_name, self.bucket_name)
