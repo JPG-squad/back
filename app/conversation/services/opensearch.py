@@ -44,7 +44,6 @@ class OpensearchService:
         }
         if conversation.conversation:
             conversation_arr = json.loads(conversation.conversation)["conversation"]
-            logger.info(conversation_arr)
             c_to_index["conversation"] = conversation_arr
         try:
             self.open_search.index(
@@ -72,6 +71,8 @@ class OpensearchService:
                 return []
             results = []
             for hit in response["hits"]["hits"]:
+                hightlight = hit["highlight"]
+                hightlight["conversation_id"] = hit["_source"]["id"]
                 results.append(hit["highlight"])
             return results
         except Exception:
