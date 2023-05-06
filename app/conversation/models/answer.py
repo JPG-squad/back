@@ -21,4 +21,4 @@ class AnswerModel(models.Model):
         )
 
     def __str__(self):
-        return self.text
+        return f"Relevant Point: {self.relevant_point.text} - Patient: {self.patient.name} - Answer: {self.text}"
