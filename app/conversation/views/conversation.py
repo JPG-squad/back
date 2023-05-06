@@ -98,6 +98,7 @@ class ConversationUploadView(GenericAPIView):
             now_str = now.strftime('%Y_%m_%d_%H_%M_%S_%f')
 
             file_name = f"{patient_id}_{request.user.id}_{now_str}_{file.name}"
+            file_extension = file_name.split(".")[-1]
             patient_name = patient.name
             employee_name = request.user.name
 
@@ -121,7 +122,7 @@ class ConversationUploadView(GenericAPIView):
                     title=title,
                     description=description,
                     wav_file_s3_path=file_name,
-                    transcribed_file_s3_path=file_name.replace(".wav", ".json"),
+                    transcribed_file_s3_path=file_name.replace(f".{file_extension}", ".json"),
                     conversation=json.dumps(transcription),
                     duration=duration,
                 )

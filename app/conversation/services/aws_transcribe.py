@@ -21,9 +21,12 @@ class AWSTranscribeService:
         self.s3.upload_fileobj(file, self.bucket_name, self.file_name)
         self.employee_name = employee_name
         self.patient_name = patient_name
+        self.file_extension = self.file_name.split(".")[-1]
 
     def get_duration(self):
-        response = self.s3.get_object(Bucket=self.bucket_name, Key=self.file_name.replace(".wav", ".json"))
+        response = self.s3.get_object(
+            Bucket=self.bucket_name, Key=self.file_name.replace(f".{self.file_extension}", ".json")
+        )
         transcription_json = json.loads(response["Body"].read().decode("utf-8"))
         return transcription_json["results"]["speaker_labels"]["segments"][-1]["end_time"]
 
@@ -31,7 +34,7 @@ class AWSTranscribeService:
         job_name = "transcribe-job-" + self.file_name
         self._start_job(
             job_name=job_name,
-            media_format="wav",
+            media_format=self.file_extension,
             language_code="es-ES",
         )
         job_status = self.transcribe_client.get_transcription_job(TranscriptionJobName=job_name)["TranscriptionJob"][
@@ -49,7 +52,9 @@ class AWSTranscribeService:
         else:
             logger.error("Transcription job failed with status: %s", job_status)
         # self.transcribe_client.delete_transcription_job(TranscriptionJobName=job_name)
-        response = self.s3.get_object(Bucket=self.bucket_name, Key=self.file_name.replace(".wav", ".json"))
+        response = self.s3.get_object(
+            Bucket=self.bucket_name, Key=self.file_name.replace(f".{self.file_extension}", ".json")
+        )
         transcription_json = json.loads(response["Body"].read().decode("utf-8"))
         parsed_conversation_json = self._parse_transcribe_conversation(transcription_json)
         improved_transcript = self._improve_transcription(parsed_conversation_json)
@@ -82,7 +87,7 @@ class AWSTranscribeService:
                 "MediaFormat": media_format,
                 "LanguageCode": language_code,
                 "OutputBucketName": self.bucket_name,
-                "OutputKey": self.file_name.replace(".wav", ".json"),
+                "OutputKey": self.file_name.replace(f".{self.file_extension}", ".json"),
                 "Settings": {"ShowSpeakerLabels": True, "MaxSpeakerLabels": 2},
             }
             logger.info("Starting transcription job with arguments: %s", json.dumps(job_args))
