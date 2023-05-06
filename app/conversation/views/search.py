@@ -19,8 +19,8 @@ class SearchView(GenericAPIView):
     """Search conversations."""
 
     serializer_class = SearchSerializer
-    # authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         """Search conversations."""
