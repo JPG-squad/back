@@ -2,7 +2,7 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from conversation.models import AnswerModel, PatientModel
+from conversation.models import AnswerModel, ConversationModel, PatientModel
 from conversation.serializers import PatientSerializer, PatientSheetSerializer
 
 
@@ -17,6 +17,9 @@ class PatientView(GenericAPIView):
         """Get all patients of the authenticated user."""
         queryset = PatientModel.objects.filter(user_id=request.user.id)
         serializer = PatientSerializer(queryset, many=True)
+        for patient in serializer.data:
+            n_conversations = ConversationModel.objects.filter(patient_id=patient["id"]).count()
+            patient["n_conversations"] = n_conversations
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
     def post(self, request):
