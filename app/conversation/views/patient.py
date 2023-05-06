@@ -69,7 +69,7 @@ class PatientSheetView(GenericAPIView):
 
     def get(self, request, patient_id):
         """Get a specific patient of the authenticated user."""
-        answers = AnswerModel.objects.filter(id=patient_id)
+        answers = AnswerModel.objects.filter(patient_id=patient_id)
         all_answers = []
         for answer in answers:
             if not answer.resolved:
