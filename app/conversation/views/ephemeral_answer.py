@@ -26,12 +26,13 @@ class EphemeralAnswerView(GenericAPIView):
         if serializer.is_valid():
             conversation_transcript = ConversationModel.objects.get(id=conversation_id).conversation
             context = (
-                """A continuacion te voy a pasar una transcripcion de una conversacion,
-                donde las frases estan separadas en objectos json segun quien las dijo.
-                Usalo como contexto para la pregunta de despues: """
+                """A continuación te voy a pasar una transcripción de una conversación,
+                dónde las frases estan separadas en objectos json según quién las dijo:\n"""
                 + conversation_transcript
             )
-            answer = ChatGPTService.ask(context=context, question=serializer.validated_data["question"])
+            question_text = "\n\nA partir de la conversación anterior, contesta a la siguiente pregunta: "
+            question = question_text + serializer.validated_data["question"]
+            answer = ChatGPTService.ask(context=context, question=question)
             serializer.save(conversation_id=conversation_id, answer=answer)
             return Response(status=status.HTTP_201_CREATED, data={"status": "Ephemeral answer created."})
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
