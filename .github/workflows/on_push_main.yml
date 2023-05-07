@@ -97,7 +97,7 @@ jobs:
         id: prep
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REGISTRY_DRP: 991205768218.dkr.ecr.eu-west-1.amazonaws.com/backend
+          ECR_REGISTRY_DRP: 991205768218.dkr.ecr.eu-west-1.amazonaws.com
         run: |
           TAG=$( echo ${{ steps.release_tag.outputs.tag }} )
           TAGS="${ECR_REGISTRY}/backend:${TAG}"
