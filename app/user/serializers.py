@@ -63,3 +63,9 @@ class AuthTokenSerializer(serializers.Serializer):
         attrs["user"] = user
         # In validate method, we have to reutrn the attrs
         return attrs
+
+
+class UserConversationsSerializer(serializers.Serializer):
+    """Serializer for the user conversations."""
+
+    ...

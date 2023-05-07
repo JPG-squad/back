@@ -6,7 +6,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
-from user.serializers import AuthTokenSerializer, UserSerializer
+from conversation.models import ConversationModel, PatientModel
+from user.serializers import AuthTokenSerializer, UserConversationsSerializer, UserSerializer
 
 
 # The CreateAPIView it's a view designed to handle http post requests
@@ -38,6 +39,31 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         """Retrieve and return the authenticated user."""
         return self.request.user
+
+
+class UserConversationsView(generics.GenericAPIView):
+    """View to return the user conversations."""
+
+    serializer_class = UserConversationsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    # We are overwritting the default behaivour
+    def get(self, request):
+        """Retrieve and return the conversations of a user."""
+        patients = PatientModel.objects.filter(user_id=request.user.id)
+        # Retrieve all the conversations where the patient is in the list of patients
+        conversations = ConversationModel.objects.filter(patient__in=patients)
+        array_to_return = []
+        for conversation in conversations:
+            array_to_return.append(
+                {
+                    "id": conversation.id,
+                    "title": conversation.title,
+                    "patient_id": conversation.patient_id,
+                }
+            )
+        return Response(status=status.HTTP_200_OK, data=array_to_return)
 
 
 class LogoutView(generics.ListAPIView):
