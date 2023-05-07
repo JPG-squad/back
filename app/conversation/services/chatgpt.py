@@ -15,7 +15,7 @@ logger = logging.getLogger(LOGGER_NAME)
 class ChatGPTService:
     @staticmethod
     def ask(context, question):
-        logger.info("Asking to chatgpt: %s", question)
+        logger.debug("Asking to chatgpt: %s", question)
         response = Completion.create(
             engine="text-davinci-003",
             prompt=f"{context + question}",
@@ -29,7 +29,7 @@ class ChatGPTService:
         )
 
         answer = response.choices[0].text.strip()
-        logger.info("Answer from chatgpt: %s", answer)
+        logger.debug("Answer from chatgpt: %s", answer)
         return answer
 
     @staticmethod
