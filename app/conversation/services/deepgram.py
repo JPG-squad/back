@@ -23,8 +23,6 @@ class DeepgramService:
             'punctuate': True,
             'diarize': True,
             'language': 'es',
-            #'paragraphs': True,
-            #'smart_format': True,
             'model': 'general-enhanced',
             'tier': 'enhanced',
         }

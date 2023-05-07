@@ -62,16 +62,12 @@ class AWSTranscribeService:
         return transcription_with_speakers
 
     def _improve_transcription(self, transcription):
-        question = '''Aqui tienes una respuesta en JSON de AWS transcribe, corrige el JSON y mejora la
-            respuesta. Quiero que arregles las frases sin sentido, las preguntas que hace un speaker y
-            la respuesta que da otro aveces salen en el mismo elemento.Tu objetivo principal es arreglar
-            el output de AWS transcribe.Devuelveme un JSON valido en formato UTF8:\n'''
-        conversation_json = json.loads(ChatGPTService.ask(str(transcription), question).replace("'", '"'))
-
-        question = '''En la siguiente conversacion hay errores donde uno pregunta y la respuesta del otro
-        esta en el mismo elemento del json y deberia estar en el siguiente elemento como respuesta, arreglalo.
+        question = '''\n\nEn la conversacion en formato json que te acabo de pasar puede ser que haya algunos errores de
+        quién ha hablado (en cada objecto json habla una persona distinta de las 2, intercaladamente). Tu objectivo es
+        arreglarlo para que conversacion tenga sentido. Esto puede significar que tengas que cambiar dónde se ha dicho
+        algo porque realmente lo ha dicho otra persona. No invetes nada del texto, solo arregla quién ha dicho qué.
         Devuelveme un JSON valido en formato UTF8:\n'''
-        conversation_json = json.loads(ChatGPTService.ask(str(conversation_json), question).replace("'", '"'))
+        conversation_json = json.loads(ChatGPTService.ask(str(transcription), question).replace("'", '"'))
         return conversation_json
 
     def _start_job(self, job_name, media_format, language_code):

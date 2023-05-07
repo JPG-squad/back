@@ -5,7 +5,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from app.settings import LOGGER_NAME
-from conversation.models import AnswerModel, ConversationModel, PatientModel
+from conversation.models import AnswerModel, Category, ConversationModel, PatientModel
 from conversation.serializers import PatientSerializer, PatientSheetSerializer
 
 
@@ -78,7 +78,13 @@ class PatientSheetView(GenericAPIView):
 
     def get(self, request, patient_id):
         """Get a specific patient of the authenticated user."""
-        answers = AnswerModel.objects.filter(patient_id=patient_id)
+        answers = AnswerModel.objects.filter(patient_id=patient_id).order_by("id")
+        category_order = {c.name: i for i, c in enumerate(Category)}
+
+        def sort_key(item):
+            category_name = item[0]
+            return category_order.get(category_name, len(category_order))
+
         all_answers = []
         for answer in answers:
             if not answer.resolved:
@@ -98,7 +104,8 @@ class PatientSheetView(GenericAPIView):
             if category not in answers_groupd_by_category:
                 answers_groupd_by_category[category] = []
             answers_groupd_by_category[category].append(answer)
-        return Response(status=status.HTTP_200_OK, data=answers_groupd_by_category)
+        sorted_answers_groupd_by_category = dict(sorted(answers_groupd_by_category.items(), key=sort_key))
+        return Response(status=status.HTTP_200_OK, data=sorted_answers_groupd_by_category)
 
     def post(self, request, patient_id):
         """Bulk update the sheet of a patient."""
