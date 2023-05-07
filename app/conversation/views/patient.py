@@ -106,5 +106,6 @@ class PatientSheetView(GenericAPIView):
         for answer in answers:
             answer_to_update = AnswerModel.objects.get(id=answer["id"])
             answer_to_update.text = answer["answer"]
+            answer_to_update.resolved = True
             answer_to_update.save()
         return Response(status=status.HTTP_200_OK, data={"message": "Sheet updated."})
