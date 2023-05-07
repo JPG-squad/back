@@ -70,7 +70,6 @@ class ConversationUploadDraftView(GenericAPIView):
             patient_id=patient_id, draft=draft_improved, title=title, description=description, status=Status.DRAFT.value
         )
         new_conversation.save()
-        open_search_service.index_conversation(new_conversation)
         ChatGPTService.ask_for_relevant_points_answers(draft_improved, patient_id)
         serializer = ConversationUploadDraftSerializer(new_conversation)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
@@ -116,7 +115,7 @@ class ConversationUploadView(GenericAPIView):
                 description_question = "Q: Crea un resumen de esta conversacion de maximo 30 palabras. A:"
                 description = ChatGPTService.ask(str(transcription), description_question)
 
-                ConversationModel.objects.create(
+                conversation = ConversationModel.objects.create(
                     patient=patient,
                     title=title,
                     description=description,
@@ -125,6 +124,8 @@ class ConversationUploadView(GenericAPIView):
                     conversation=json.dumps(transcription),
                     duration=duration,
                 )
+                logger.info("conversastion:", conversation)
+                open_search_service.index_conversation(conversation)
                 ChatGPTService.ask_for_relevant_points_checklist(str(transcription), patient_id)
                 ChatGPTService.ask_for_relevant_points_answers(str(transcription), patient_id)
 
