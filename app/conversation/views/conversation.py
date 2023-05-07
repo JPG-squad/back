@@ -10,7 +10,7 @@ from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from app.settings import LOGGER_NAME
+from app.settings import LOGGER_NAME, TRANSCRIPTION_BUCKET_NAME, TRANSCRIPTION_REGION
 from conversation.models import ConversationModel, PatientModel, Status
 from conversation.serializers import (
     ConversationDetailSerializer,
@@ -23,7 +23,6 @@ from conversation.services import AWSTranscribeService, ChatGPTService, Deepgram
 from conversation.services.opensearch import open_search_service
 
 
-bucket_name = environ.get("BUCKET_NAME")
 logger = logging.getLogger(LOGGER_NAME)
 
 
@@ -103,9 +102,9 @@ class ConversationUploadView(GenericAPIView):
             employee_name = request.user.name
 
             if transcribe_engine == "aws_transcribe":
-                transcribe_service = AWSTranscribeService(bucket_name, file, file_name, employee_name, patient_name)
+                transcribe_service = AWSTranscribeService(file, file_name, employee_name, patient_name)
             elif transcribe_engine == "deepgram":
-                transcribe_service = DeepgramService(bucket_name, file, file_name, employee_name, patient_name)
+                transcribe_service = DeepgramService(file, file_name, employee_name, patient_name)
 
             if execute_transcribe:
                 transcription = transcribe_service.transcribe()
@@ -150,7 +149,9 @@ class ConversationDownloadView(GenericAPIView):
         )
         if conversation.exists():
             s3_file_path = conversation[0].wav_file_s3_path
-            s3_response = boto3.client("s3", region_name="eu-west-1").get_object(Bucket=bucket_name, Key=s3_file_path)
+            s3_response = boto3.client("s3", region_name=TRANSCRIPTION_REGION).get_object(
+                Bucket=TRANSCRIPTION_BUCKET_NAME, Key=s3_file_path
+            )
             content = s3_response['Body'].read()
             response = HttpResponse(status=status.HTTP_200_OK, content=content, content_type=s3_response['ContentType'])
             response['Content-Disposition'] = f'attachment; filename="{s3_file_path}"'

@@ -8,17 +8,17 @@ import boto3
 from deepgram import Deepgram
 
 from .chatgpt import ChatGPTService
-from app.settings import DEEPGRAM_API_KEY, LOGGER_NAME
+from app.settings import DEEPGRAM_API_KEY, LOGGER_NAME, TRANSCRIPTION_BUCKET_NAME, TRANSCRIPTION_REGION
 
 
 logger = logging.getLogger(LOGGER_NAME)
 
 
 class DeepgramService:
-    def __init__(self, bucket_name, file, file_name, employee_name, patient_name):
+    def __init__(self, file, file_name, employee_name, patient_name):
         self.dg_client = Deepgram(DEEPGRAM_API_KEY)
         self.file = file
-        self.s3 = boto3.client("s3", region_name="eu-west-1")
+        self.s3 = boto3.client("s3", region_name=TRANSCRIPTION_REGION)
         self.options = {
             'punctuate': True,
             'diarize': True,
@@ -28,7 +28,7 @@ class DeepgramService:
             'model': 'general-enhanced',
             'tier': 'enhanced',
         }
-        self.bucket_name = bucket_name
+        self.bucket_name = TRANSCRIPTION_BUCKET_NAME
         self.file_name = file_name
         logger.info("Uploading file %s to bucket %s", self.file_name, self.bucket_name)
         self.s3.upload_fileobj(file, self.bucket_name, self.file_name)

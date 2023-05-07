@@ -5,17 +5,17 @@ import re
 import boto3
 
 from .chatgpt import ChatGPTService
-from app.settings import LOGGER_NAME
+from app.settings import LOGGER_NAME, TRANSCRIPTION_BUCKET_NAME, TRANSCRIPTION_REGION
 
 
 logger = logging.getLogger(LOGGER_NAME)
 
 
 class AWSTranscribeService:
-    def __init__(self, bucket_name, file, file_name, employee_name, patient_name):
-        self.transcribe_client = boto3.client("transcribe", region_name="eu-west-1")
-        self.s3 = boto3.client("s3", region_name="eu-west-1")
-        self.bucket_name = bucket_name
+    def __init__(self, file, file_name, employee_name, patient_name):
+        self.transcribe_client = boto3.client("transcribe", region_name=TRANSCRIPTION_REGION)
+        self.s3 = boto3.client("s3", region_name=TRANSCRIPTION_REGION)
+        self.bucket_name = TRANSCRIPTION_BUCKET_NAME
         self.file_name = file_name
         logger.info("Uploading file %s to bucket %s", self.file_name, self.bucket_name)
         self.s3.upload_fileobj(file, self.bucket_name, self.file_name)

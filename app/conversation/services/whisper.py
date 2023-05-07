@@ -6,17 +6,17 @@ import boto3
 import requests
 
 from .chatgpt import ChatGPTService
-from app.settings import LOGGER_NAME
+from app.settings import LOGGER_NAME, TRANSCRIPTION_BUCKET_NAME, TRANSCRIPTION_REGION
 
 
 logger = logging.getLogger(LOGGER_NAME)
 
 
 class WhisperService:
-    def __init__(self, bucket_name, file, file_name):
+    def __init__(self, file, file_name):
         self.file = file
-        self.s3 = boto3.client("s3")
-        self.bucket_name = bucket_name
+        self.s3 = boto3.client("s3", region_name=TRANSCRIPTION_REGION)
+        self.bucket_name = TRANSCRIPTION_BUCKET_NAME
         self.file_name = file_name
 
         logger.info("Uploading file %s to bucket %s", self.file_name, self.bucket_name)

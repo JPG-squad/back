@@ -21,4 +21,5 @@ OPENSEARCH_HOST=http://jpg-opensearch-node:9200
 CORS_ORIGIN_WHITELIST=http://localhost:3000,http://localhost:3001
 
 # S3
-BUCKET_NAME="jpg-backend-dev-drp"
+TRANSCRIPTION_BUCKET_NAME="jpg-backend-dev-drp"
+TRANSCRIPTION_REGION="eu-west-1"
