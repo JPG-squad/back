@@ -72,6 +72,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
           aws-region: eu-south-2
           mask-aws-account-id: "no"
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID_DRP }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY_DRP }}
+          aws-region: eu-west-1
+          mask-aws-account-id: "no"
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -89,10 +97,13 @@ jobs:
         id: prep
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REGISTRY_DRP: 991205768218.dkr.ecr.eu-west-1.amazonaws.com/backend
         run: |
           TAG=$( echo ${{ steps.release_tag.outputs.tag }} )
           TAGS="${ECR_REGISTRY}/backend:${TAG}"
           TAGS="$TAGS, ${ECR_REGISTRY}/backend:latest"
+          TAGS="$TAGS, ${ECR_REGISTRY_DRP}/backend:latest"
+          TAGS="$TAGS, ${ECR_REGISTRY_DRP}/backend:${TAG}"
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "image_uri=${ECR_REGISTRY}/backend:${TAG}" >> $GITHUB_OUTPUT
