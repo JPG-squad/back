@@ -17,7 +17,7 @@ class OpensearchService:
             logger.info("Using dev OpenSearch")
             self.open_search = OpenSearch(hosts=os.getenv('OPENSEARCH_HOST'))
             logger.info("Connected dev OpenSearch!")
-        else:
+        elif APP_ENV == "prod":
             logger.info("Using prod OpenSearch")
             credentials = boto3.Session().get_credentials()
             auth = AWSV4SignerAuth(credentials, 'eu-south-2')
@@ -29,6 +29,9 @@ class OpensearchService:
                 connection_class=RequestsHttpConnection,
             )
             logger.info("Connected prod OpenSearch!")
+        else:
+            self.open_search = None
+            logger.info("DRP does not haves opensearch at the moment!")
 
     def index_conversation(self, conversation):
         c_to_index = {
