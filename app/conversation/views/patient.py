@@ -1,9 +1,15 @@
+import logging
+
 from rest_framework import authentication, permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from app.settings import LOGGER_NAME
 from conversation.models import AnswerModel, ConversationModel, PatientModel
 from conversation.serializers import PatientSerializer, PatientSheetSerializer
+
+
+logger = logging.getLogger(LOGGER_NAME)
 
 
 class PatientView(GenericAPIView):
@@ -80,6 +86,7 @@ class PatientSheetView(GenericAPIView):
             else:
                 answer_to_return = answer.text
             a = {
+                "id": answer.id,
                 "question": answer.relevant_point.text,
                 "answer": answer_to_return,
                 "category": answer.relevant_point.category,
@@ -92,3 +99,12 @@ class PatientSheetView(GenericAPIView):
                 answers_groupd_by_category[category] = []
             answers_groupd_by_category[category].append(answer)
         return Response(status=status.HTTP_200_OK, data=answers_groupd_by_category)
+
+    def post(self, request, patient_id):
+        """Bulk update the sheet of a patient."""
+        answers = request.data.get("answers")
+        for answer in answers:
+            answer_to_update = AnswerModel.objects.get(id=answer["id"])
+            answer_to_update.text = answer["answer"]
+            answer_to_update.save()
+        return Response(status=status.HTTP_200_OK, data={"message": "Sheet updated."})
