@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 
 from .patient import PatientModel
@@ -9,8 +11,14 @@ class AnswerModel(models.Model):
     patient = models.ForeignKey(PatientModel, related_name="answers", on_delete=models.CASCADE, null=False)
     relevant_point = models.ForeignKey(RelevantPointModel, related_name="answers", on_delete=models.CASCADE, null=False)
     resolved = models.BooleanField(null=False, default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(editable=False, null=False, blank=False, default=datetime.datetime.now())
+    updated_at = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now())
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_at = datetime.datetime.now()
+        self.updated_at = datetime.datetime.now()
+        return super(AnswerModel, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ("updated_at",)

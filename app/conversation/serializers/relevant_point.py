@@ -19,3 +19,11 @@ class RelevantPointChecklistSerializer(serializers.Serializer):
     """
 
     context = serializers.CharField(required=True)
+
+
+class RelevantPointChecklistDiscardSerializer(serializers.Serializer):
+    """
+    View for discarting the relevant points checked during the last ongoing conversation.
+    """
+
+    datetime = serializers.DateTimeField(required=True)

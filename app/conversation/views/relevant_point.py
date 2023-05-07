@@ -5,8 +5,12 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from app.settings import LOGGER_NAME
-from conversation.models import RelevantPointModel
-from conversation.serializers import RelevantPointChecklistSerializer, RelevantPointSerializer
+from conversation.models import AnswerModel, RelevantPointModel
+from conversation.serializers import (
+    RelevantPointChecklistDiscardSerializer,
+    RelevantPointChecklistSerializer,
+    RelevantPointSerializer,
+)
 from conversation.services import ChatGPTService
 
 
@@ -81,3 +85,24 @@ class RelevantPointChecklistView(GenericAPIView):
             request.data.get("context"), patient_id
         )
         return Response(status=status.HTTP_200_OK, data=answers_groupd_by_category)
+
+
+class RelevantPointChecklistDiscardView(GenericAPIView):
+    """
+    View for discarting the relevant points checked during the last ongoing conversation.
+    """
+
+    serializer_class = RelevantPointChecklistDiscardSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, patient_id):
+        """Discart the relevant points checked during the last ongoing conversation."""
+        conversation_start_datetime = request.data.get("datetime")
+        answers_to_discard = AnswerModel.objects.filter(
+            patient_id=patient_id, resolved=True, updated_at__gt=conversation_start_datetime
+        )
+        for a in answers_to_discard:
+            a.resolved = False
+            a.save()
+        return Response(status=status.HTTP_200_OK, data="Checklist discarded.")
