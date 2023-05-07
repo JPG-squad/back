@@ -60,6 +60,7 @@ class UserConversationsView(generics.GenericAPIView):
                 {
                     "id": conversation.id,
                     "title": conversation.title,
+                    "description": conversation.description,
                     "patient_id": conversation.patient_id,
                 }
             )
