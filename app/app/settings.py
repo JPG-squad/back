@@ -20,7 +20,11 @@ from core.aws import SecretsManager
 
 # Secrets variables
 secrets_manager = SecretsManager()
-secret_name = "backend" if os.environ.get("APP_ENV") == "prod" else "backend-{}".format(os.environ.get("APP_ENV"))
+secret_name = (
+    "backend"
+    if (os.environ.get("APP_ENV") == "prod" or os.environ.get("APP_ENV") == "drp")
+    else "backend-{}".format(os.environ.get("APP_ENV"))
+)
 
 DATABASE_PASSWORD = secrets_manager.try_get_secret(secret_name, "database_password")
 OPENAI_API_KEY = secrets_manager.try_get_secret(secret_name, "open_api_key")
