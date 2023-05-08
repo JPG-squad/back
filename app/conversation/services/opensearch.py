@@ -63,12 +63,22 @@ class OpensearchService:
             response = self.open_search.search(
                 index="jpg.object",
                 body={
-                    "query": {"multi_match": {"query": text, "type": "most_fields", "fields": ["*"]}},
-                    'highlight': {'fields': {'*': {}}, 'pre_tags': '<b>', 'post_tags': '</b>'},
+                    "query": {
+                        "query_string": {
+                            "query": f"*{text}*",
+                            "fields": ["*"],
+                        }
+                    },
+                    "highlight": {
+                        "fields": {"*": {}},
+                        "require_field_match": False,
+                        "pre_tags": "<b>",
+                        "post_tags": "</b>",
+                    },
                 },
             )
             hits = response["hits"]["total"]["value"]
-            logger.info(f"Search conversation with text{text} total hits {hits}")
+            logger.debug(f"Search conversation with text{text} total hits {hits}")
             # Extract the highlighted conversation object from the response hits
             if response["hits"]["total"]["value"] == 0:
                 return []
